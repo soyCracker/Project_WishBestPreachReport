@@ -1,0 +1,66 @@
+﻿@inherits LayoutComponentBase
+
+<PageTitle>WishBestPreachReport.BlazorServer</PageTitle>
+
+<MudThemeProvider Theme="@MyCustomTheme" @bind-IsDarkMode="@isDarkMode" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="0">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => ToggleNavMenu())" />
+        <MudSpacer />
+        <MudIconButton Icon="@lighOrDarkIcon" Color="Color.Inherit" OnClick="@ToggleDarkMode" />
+        @*<MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Link="https://mudblazor.com/" Target="_blank" />*@
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6">報告</MudText>
+        </MudDrawerHeader>
+        <NavMenu />
+    </MudDrawer>
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="my-16 pt-16">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    bool _drawerOpen = true;
+    public bool isDarkMode = false;
+    private string lighOrDarkIcon = Icons.Filled.LightMode;
+
+    private void ToggleNavMenu()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void ToggleDarkMode()
+    {
+        isDarkMode = !isDarkMode;
+        lighOrDarkIcon = isDarkMode ? Icons.Filled.DarkMode : Icons.Filled.LightMode;
+    }
+
+    MudTheme MyCustomTheme = new MudTheme()
+        {
+            Palette = new Palette()
+            {
+                Primary = Colors.Pink.Accent1,
+                Secondary = Colors.Green.Accent4,
+                AppbarBackground = Colors.Pink.Accent1,
+            },
+            //PaletteDark = new Palette()
+            //{
+            //    Primary = Colors.Blue.Lighten1,
+            //    AppbarBackground = Colors.Pink.Accent1,
+            //    Background = Colors.Grey.Darken3
+            //},
+
+            LayoutProperties = new LayoutProperties()
+            {
+                DrawerWidthLeft = "260px",
+                DrawerWidthRight = "300px"
+            }
+        };
+}

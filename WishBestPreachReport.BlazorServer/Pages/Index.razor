@@ -1,0 +1,125 @@
+﻿@page "/"
+@using System
+@using System.IO
+@using System.Globalization
+@inject IStringLocalizer<Index> loc
+
+<PageTitle>@loc["PageTitle"]</PageTitle>
+
+<h1>Hello, world!</h1>
+
+<MudGrid>
+    <MudItem xs="12" sm="6">
+        <MudDatePicker PickerVariant="PickerVariant.Static" Orientation="Orientation.Landscape"
+                       Date="@(DateTime.Today)" Elevation="12" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        
+        <MudPaper Class="pa-4" Elevation="12">
+            <MudRadioGroup SelectedOption="@preachTimeRadio" SelectedOptionChanged="TimePickerMethodSelect" T="bool">
+                <MudRadio Option="true" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="true">@loc["PreachTimePicker_Editable"]</MudRadio>
+                <MudRadio Option="false" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="false">@loc["PreachTimePicker_Dialog"]</MudRadio>
+            </MudRadioGroup>
+            @if (preachTimeRadio)
+            {
+                <MudNumericField Value="@preachMinute" Label="@loc["PreachTimeLabel"]"
+                             Variant="Variant.Text" Min="0" Max="1440" ValueChanged="MinuteToHour" T="int"/>
+                
+            }
+            else
+            {
+                <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="Start" Time="@startTime" TimeChanged="StartTimespanToHour" />
+                <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="End" Time="@endTime" TimeChanged="EndTimespanToHour" />
+            }
+            <br/>
+            <MudText Typo="Typo.body1">@loc["PreachHourTime"]: @preachDisplayTime</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudPaper Class="pa-4">
+            <MudNumericField @bind-Value="reviewNum" Label="@loc["ReviewNum"]" Variant="Variant.Text" Min="0" Max="100" />
+            <MudNumericField @bind-Value="bibleStudyNum" Label="@loc["BibleStudyNum"]" Variant="Variant.Text" Min="0" Max="100" />
+            <MudNumericField @bind-Value="distributeNum" Label="@loc["DistributeNum"]" Variant="Variant.Text" Min="0" Max="100" />
+            <MudNumericField @bind-Value="mediaPlayNum" Label="@loc["MediaPlayNum"]" Variant="Variant.Text" Min="0" Max="100" />
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private TimeSpan? startTime = new TimeSpan(09, 30, 00);
+    private TimeSpan? endTime = new TimeSpan(11, 30, 00);
+    private bool preachTimeRadio { get; set; } = true;
+    private int preachMinute { get; set; }
+    private string preachDisplayTime = "0";
+    private int reviewNum { get; set; }
+    private int bibleStudyNum { get; set; }
+    private int distributeNum { get; set; }
+    private int mediaPlayNum { get; set; }
+
+    private void TimePickerMethodSelect(bool option)
+    {
+        preachTimeRadio = option;
+        if (preachTimeRadio)
+        {
+            preachMinute = 0;
+            preachDisplayTime = "0";
+        }
+        else
+        {
+            TimespanChkAndToHour();
+        } 
+    }
+
+    private void MinuteToHour(int val)
+    {
+        preachMinute = val;
+        //int h = val / 60;
+        //double m = (double)(val % 60) / 60;
+
+        preachDisplayTime = ConvertToPreachDisplayTime(preachMinute);
+    }
+
+    private void StartTimespanToHour(TimeSpan? timeSpan)
+    {
+        startTime = timeSpan;
+        if (startTime > endTime)
+        {
+            endTime = startTime;
+        }
+        TimespanChkAndToHour();
+    }
+
+    private void EndTimespanToHour(TimeSpan? timeSpan)
+    {
+        endTime = timeSpan;
+        if (startTime > endTime)
+        {
+            startTime = endTime;
+        }
+        TimespanChkAndToHour();
+    }
+
+    private void TimespanChkAndToHour()
+    {  
+        var interval = endTime - startTime;
+        preachMinute = (int)interval.Value.TotalMinutes;
+        preachDisplayTime = ConvertToPreachDisplayTime(preachMinute);
+
+    }
+
+    private string ConvertToPreachDisplayTime(int minutes)
+    {
+        int h = minutes / 60;
+        double m = (minutes % 60) / 60;
+
+        return "" + (h+m);
+    }
+
+    private void ReviewNumChk()
+    {
+        if(bibleStudyNum>0 && reviewNum==0)
+        {
+            reviewNum = 1;
+        }
+    }
+}
