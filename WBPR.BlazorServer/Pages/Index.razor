@@ -10,12 +10,13 @@
 
 <MudGrid>
     <MudItem xs="12" sm="6">
-        <MudDatePicker PickerVariant="PickerVariant.Static" Orientation="Orientation.Landscape"
-                       Date="@(DateTime.Today)" Elevation="12" />
+        <MudPaper Class="pa-4" Elevation="4">
+            <MudDatePicker Date="@preachDate" Label="日期" />
+        </MudPaper>
     </MudItem>
-    <MudItem xs="12" sm="6">
-        
-        <MudPaper Class="pa-4" Elevation="12">
+
+    <MudItem xs="12" sm="6">  
+        <MudPaper Class="pa-4" Elevation="4">
             <MudRadioGroup SelectedOption="@preachTimeRadio" SelectedOptionChanged="TimePickerMethodSelect" T="bool">
                 <MudRadio Option="true" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="true">@loc["PreachTimePicker_Editable"]</MudRadio>
                 <MudRadio Option="false" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="false">@loc["PreachTimePicker_Dialog"]</MudRadio>
@@ -35,17 +36,23 @@
             <MudText Typo="Typo.body1">@loc["PreachHourTime"]: @preachDisplayTime</MudText>
         </MudPaper>
     </MudItem>
+
     <MudItem xs="12" sm="6">
-        <MudPaper Class="pa-4">
-            <MudNumericField @bind-Value="reviewNum" Label="@loc["ReviewNum"]" Variant="Variant.Text" Min="0" Max="100" />
-            <MudNumericField @bind-Value="bibleStudyNum" Label="@loc["BibleStudyNum"]" Variant="Variant.Text" Min="0" Max="100" />
-            <MudNumericField @bind-Value="distributeNum" Label="@loc["DistributeNum"]" Variant="Variant.Text" Min="0" Max="100" />
-            <MudNumericField @bind-Value="mediaPlayNum" Label="@loc["MediaPlayNum"]" Variant="Variant.Text" Min="0" Max="100" />
+        <MudPaper Class="pa-4" Elevation="4">
+            <MudNumericField @bind-Value="reviewNum" Label="@loc["ReviewNum"]" Variant="Variant.Text" 
+                Min="bibleStudyNum>0?1:0" Max="100" />
+            <MudNumericField Value="@bibleStudyNum" Label="@loc["BibleStudyNum"]" Variant="Variant.Text" 
+                Min="0" Max="100" ValueChanged="BibleStudyNumChanged" T="int"/>
+            <MudNumericField @bind-Value="distributeNum" Label="@loc["DistributeNum"]" 
+                Variant="Variant.Text" Min="0" Max="100" />
+            <MudNumericField @bind-Value="mediaPlayNum" Label="@loc["MediaPlayNum"]" Variant="Variant.Text"
+                Min="0" Max="100" />
         </MudPaper>
     </MudItem>
 </MudGrid>
 
 @code {
+    private DateTime preachDate = DateTime.Today;
     private TimeSpan? startTime = new TimeSpan(09, 30, 00);
     private TimeSpan? endTime = new TimeSpan(11, 30, 00);
     private bool preachTimeRadio { get; set; } = true;
@@ -73,9 +80,6 @@
     private void MinuteToHour(int val)
     {
         preachMinute = val;
-        //int h = val / 60;
-        //double m = (double)(val % 60) / 60;
-
         preachDisplayTime = ConvertToPreachDisplayTime(preachMinute);
     }
 
@@ -104,15 +108,13 @@
         var interval = endTime - startTime;
         preachMinute = (int)interval.Value.TotalMinutes;
         preachDisplayTime = ConvertToPreachDisplayTime(preachMinute);
-
     }
 
     private string ConvertToPreachDisplayTime(int minutes)
     {
         int h = minutes / 60;
-        double m = (minutes % 60) / 60;
-
-        return "" + (h+m);
+        double m = (double)(minutes % 60) / 60;
+        return "" + Math.Round(h+m, 2);
     }
 
     private void ReviewNumChk()
@@ -120,6 +122,15 @@
         if(bibleStudyNum>0 && reviewNum==0)
         {
             reviewNum = 1;
+        }
+    }
+
+    private void BibleStudyNumChanged(int val)
+    {
+        bibleStudyNum = val;
+        if(bibleStudyNum>0 && reviewNum==0)
+        {
+            reviewNum++;
         }
     }
 }
