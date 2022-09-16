@@ -38,27 +38,58 @@
         </MudPaper>
     </MudItem>*@
 
-    <MudItem xs="12" sm="6">
-        <MudPaper Class="pa-4" Elevation="4">
-            <MudRadioGroup SelectedOption="@preachTimeRadio" SelectedOptionChanged="TimePickerMethodSelect" T="bool">
-                <MudRadio Option="true" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="true">@loc["PreachTimePicker_Editable"]</MudRadio>
-                <MudRadio Option="false" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="false">@loc["PreachTimePicker_Dialog"]</MudRadio>
-            </MudRadioGroup>
-        @if (preachTimeRadio)
-        {
-                    <MudNumericField Value="@preachMinute" Label="@loc["PreachTimeLabel"]"
-                                Variant="Variant.Text" Min="0" Max="1440" ValueChanged="MinuteToHour" T="int" />
+    @if(prData.PreachReportTimes.Count()==0)
+    {
+        <MudItem xs="12" sm="6">
+            <MudPaper Class="pa-4" Elevation="4">
+                <MudRadioGroup SelectedOption="@preachTimeRadio" SelectedOptionChanged="TimePickerMethodSelect" T="bool">
+                    <MudRadio Option="true" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="true">@loc["PreachTimePicker_Editable"]</MudRadio>
+                    <MudRadio Option="false" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="false">@loc["PreachTimePicker_Dialog"]</MudRadio>
+                </MudRadioGroup>
+            @if (preachTimeRadio)
+            {
+                        <MudNumericField Value="@preachMinute" Label="@loc["PreachTimeLabel"]"
+                                    Variant="Variant.Text" Min="0" Max="1440" ValueChanged="MinuteToHour" T="int" />
 
-        }
-        else
+            }
+            else
+            {
+                        <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="Start" Time="@startTime" TimeChanged="StartTimespanToHour" />
+                        <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="End" Time="@endTime" TimeChanged="EndTimespanToHour" />
+            }
+                <br />
+                <MudText Typo="Typo.body1">@loc["PreachHourTime"]: @preachDisplayTime</MudText>
+            </MudPaper>
+        </MudItem> 
+    }
+    else
+    {
+        foreach (var prTime in prData.PreachReportTimes)
         {
-                    <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="Start" Time="@startTime" TimeChanged="StartTimespanToHour" />
-                    <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="End" Time="@endTime" TimeChanged="EndTimespanToHour" />
+            <MudItem xs="12" sm="6">
+                <MudPaper Class="pa-4" Elevation="4">
+                    <MudRadioGroup SelectedOption="prTime.PreachTimeRadio" SelectedOptionChanged="TimePickerMethodSelect" T="bool">
+                        <MudRadio Option="true" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="true">@loc["PreachTimePicker_Editable"]</MudRadio>
+                        <MudRadio Option="false" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="false">@loc["PreachTimePicker_Dialog"]</MudRadio>
+                    </MudRadioGroup>
+                    @if (prTime.PreachTimeRadio)
+                {
+                        <MudNumericField Value="preachMinute" Label="@loc["PreachTimeLabel"]"
+                                        Variant="Variant.Text" Min="0" Max="1440" ValueChanged="MinuteToHour" T="int" />
+
+                }
+                else
+                {
+                            <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="Start" Time="@startTime" TimeChanged="StartTimespanToHour" />
+                            <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="End" Time="@endTime" TimeChanged="EndTimespanToHour" />
+                }
+                    <br />
+                    <MudText Typo="Typo.body1">@loc["PreachHourTime"]: @preachDisplayTime</MudText>
+                </MudPaper>
+            </MudItem>
         }
-            <br />
-            <MudText Typo="Typo.body1">@loc["PreachHourTime"]: @preachDisplayTime</MudText>
-        </MudPaper>
-    </MudItem> 
+    }
+    
 </MudGrid>
 
 @code {
@@ -74,6 +105,7 @@
     protected override async Task OnInitializedAsync()
     {
         logger.LogDebug("Index OnInitializedAsync()");
+        prData.PreachReportTimes = new List<PreachReportTimePeriod>();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
