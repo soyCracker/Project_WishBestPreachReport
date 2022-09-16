@@ -6,16 +6,27 @@ using System.Threading.Tasks;
 
 namespace WBPR.Service.Utils
 {
-    public class DatetimeUtil
+    public static class DatetimeUtil
     {
-        public DateTimeOffset LocalToUtc(DateTime localTime)
+        public static DateTimeOffset LocalToUtc(this DateTime localTime, TimeZoneInfo clientTimeZoneInfo)
         {
             //var dt = new DateTime(2021, 4, 20);
             //var ti = new TimeSpan(21, 0, 0);
             //var nd = (dt + ti);
             //TimeZone localZone = TimeZone.CurrentTimeZone;
-            return new DateTimeOffset(localTime, 
-                TimeZoneInfo.FindSystemTimeZoneById("Taipei Standard Time").BaseUtcOffset).ToUniversalTime();
+            return new DateTimeOffset(localTime,
+                clientTimeZoneInfo.BaseUtcOffset).ToUniversalTime();
+        }
+
+        public static DateTime ToServerLocalTime(this DateTime clientTime)
+        {
+            DateTime serverTime = TimeZoneInfo.ConvertTime(clientTime, TimeZoneInfo.Local);
+            return serverTime;
+        }
+
+        public static DateTimeOffset GetServerTime()
+        {
+            return DateTimeOffset.UtcNow;
         }
     }
 }

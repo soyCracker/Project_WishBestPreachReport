@@ -2,66 +2,122 @@
 @using System
 @using System.IO
 @using System.Globalization
+@using WBPR.Service.Models.Common
+@using WBPR.Service.Utils
+@using WBPR.BlazorServer.Utils
+@using Microsoft.Extensions.Logging
 @inject IStringLocalizer<Index> loc
+@inject IJSRuntime jsRuntime
+@inject ILogger<Index> logger
 
 <PageTitle>@loc["PageTitle"]</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>@loc["Overview"]</h1>
 
 <MudGrid>
     <MudItem xs="12" sm="6">
         <MudPaper Class="pa-4" Elevation="4">
-            <MudDatePicker Date="@preachDate" Label="日期" />
+            @*<MudText Align="Align.Left">@testTime</MudText>*@
+            <MudDatePicker Date="displayPreachDate" Label="日期" DateChanged="PreachDateChanged" />
+
+            <br />
+            <MudNumericField @bind-Value="prData.ReviewNum" Label="@loc["ReviewNum"]" Variant="Variant.Text"
+                             Min="prData.BibleStudyNum>0?1:0" Max="100" />
+            <MudNumericField Value="prData.BibleStudyNum" Label="@loc["BibleStudyNum"]" Variant="Variant.Text"
+                             Min="0" Max="100" ValueChanged="BibleStudyNumChanged" T="int" />
+            <MudNumericField @bind-Value="prData.DistributeNum" Label="@loc["DistributeNum"]"
+                             Variant="Variant.Text" Min="0" Max="100" />
+            <MudNumericField @bind-Value="prData.MediaPlayNum" Label="@loc["MediaPlayNum"]" Variant="Variant.Text"
+                             Min="0" Max="100" />
         </MudPaper>
     </MudItem>
 
-    <MudItem xs="12" sm="6">  
+@*    <MudItem xs="12" sm="6">
+        <MudPaper Class="pa-4" Elevation="4">
+            
+        </MudPaper>
+    </MudItem>*@
+
+    <MudItem xs="12" sm="6">
         <MudPaper Class="pa-4" Elevation="4">
             <MudRadioGroup SelectedOption="@preachTimeRadio" SelectedOptionChanged="TimePickerMethodSelect" T="bool">
                 <MudRadio Option="true" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="true">@loc["PreachTimePicker_Editable"]</MudRadio>
                 <MudRadio Option="false" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="false">@loc["PreachTimePicker_Dialog"]</MudRadio>
             </MudRadioGroup>
-            @if (preachTimeRadio)
-            {
-                <MudNumericField Value="@preachMinute" Label="@loc["PreachTimeLabel"]"
-                             Variant="Variant.Text" Min="0" Max="1440" ValueChanged="MinuteToHour" T="int"/>
-                
-            }
-            else
-            {
-                <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="Start" Time="@startTime" TimeChanged="StartTimespanToHour" />
-                <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="End" Time="@endTime" TimeChanged="EndTimespanToHour" />
-            }
-            <br/>
+        @if (preachTimeRadio)
+        {
+                    <MudNumericField Value="@preachMinute" Label="@loc["PreachTimeLabel"]"
+                                Variant="Variant.Text" Min="0" Max="1440" ValueChanged="MinuteToHour" T="int" />
+
+        }
+        else
+        {
+                    <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="Start" Time="@startTime" TimeChanged="StartTimespanToHour" />
+                    <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="End" Time="@endTime" TimeChanged="EndTimespanToHour" />
+        }
+            <br />
             <MudText Typo="Typo.body1">@loc["PreachHourTime"]: @preachDisplayTime</MudText>
         </MudPaper>
-    </MudItem>
-
-    <MudItem xs="12" sm="6">
-        <MudPaper Class="pa-4" Elevation="4">
-            <MudNumericField @bind-Value="reviewNum" Label="@loc["ReviewNum"]" Variant="Variant.Text" 
-                Min="bibleStudyNum>0?1:0" Max="100" />
-            <MudNumericField Value="@bibleStudyNum" Label="@loc["BibleStudyNum"]" Variant="Variant.Text" 
-                Min="0" Max="100" ValueChanged="BibleStudyNumChanged" T="int"/>
-            <MudNumericField @bind-Value="distributeNum" Label="@loc["DistributeNum"]" 
-                Variant="Variant.Text" Min="0" Max="100" />
-            <MudNumericField @bind-Value="mediaPlayNum" Label="@loc["MediaPlayNum"]" Variant="Variant.Text"
-                Min="0" Max="100" />
-        </MudPaper>
-    </MudItem>
+    </MudItem> 
 </MudGrid>
 
 @code {
-    private DateTime preachDate = DateTime.Today;
+    private DateTime displayPreachDate = DateTime.Today;
     private TimeSpan? startTime = new TimeSpan(09, 30, 00);
     private TimeSpan? endTime = new TimeSpan(11, 30, 00);
     private bool preachTimeRadio { get; set; } = true;
     private int preachMinute { get; set; }
     private string preachDisplayTime = "0";
-    private int reviewNum { get; set; }
-    private int bibleStudyNum { get; set; }
-    private int distributeNum { get; set; }
-    private int mediaPlayNum { get; set; }
+    private PreachReportData prData = new PreachReportData();
+    //private DateTime testTime;
+
+    protected override async Task OnInitializedAsync()
+    {
+        logger.LogDebug("Index OnInitializedAsync()");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            //var timeSpan = await TimezoneUtil.GetTimezoneOffset(jsRuntime);
+            //testTime = DateTime.UtcNow.Add(timeSpan);
+            await Init();
+            logger.LogDebug("Index OnAfterRenderAsync() prData.PreachDate: " + prData.PreachDate);
+            //await InvokeAsync(() => StateHasChanged());
+        }
+
+    }
+
+    private async Task Init()
+    {
+        if (GetDataFromCloud()!=null)
+        {
+
+        }
+        await InitPreachReportData();
+    }
+
+    private async Task InitPreachReportData()
+    {
+        prData = new PreachReportData();
+        prData.PreachDate = DatetimeUtil.GetServerTime();
+        logger.LogDebug("Index InitPreachReportData() prData.PreachDate: " + prData.PreachDate);
+        prData.ReviewNum = 0;
+        prData.BibleStudyNum = 0;
+        prData.MediaPlayNum = 0;
+        prData.DistributeNum = 0;
+        prData.PreachReportTimes = new List<PreachReportTimePeriod>();
+        prData.UpdateTime = DatetimeUtil.GetServerTime();
+    }
+
+    private async Task PreachDateChanged(DateTime? date)
+    {
+        displayPreachDate = date.Value;
+        var timeSpan = await BlazorTimeUtil.GetClientTimezoneOffset(jsRuntime);
+        prData.PreachDate = new DateTimeOffset(date.Value, timeSpan).ToUniversalTime();
+        logger.LogDebug("Index PreachDateChanged() prData.PreachDate: " + prData.PreachDate);
+    }
 
     private void TimePickerMethodSelect(bool option)
     {
@@ -119,18 +175,29 @@
 
     private void ReviewNumChk()
     {
-        if(bibleStudyNum>0 && reviewNum==0)
+        if(prData.BibleStudyNum>0 && prData.ReviewNum==0)
         {
-            reviewNum = 1;
+            prData.ReviewNum = 1;
         }
     }
 
     private void BibleStudyNumChanged(int val)
     {
-        bibleStudyNum = val;
-        if(bibleStudyNum>0 && reviewNum==0)
+        prData.BibleStudyNum = val;
+        if(prData.BibleStudyNum>0 && prData.ReviewNum==0)
         {
-            reviewNum++;
+            prData.ReviewNum++;
         }
+    }
+
+    private void Update()
+    {
+
+
+    }
+
+    private PreachReportData GetDataFromCloud()
+    {
+        return null;
     }
 }
