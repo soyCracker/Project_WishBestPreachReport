@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using MudBlazor.Services;
 using WBPR.BlazorServer.Data;
+using WBPR.Service.Interfaces;
+using WBPR.Service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +10,8 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddMudServices();
-//builder.Services.AddAntDesign();
+builder.Services.AddScoped<IPreachReportService, PreachReportService>();
+builder.Services.AddScoped<IStorageService, TestLocalStorageService>();
 
 //»y¨t
 builder.Services.AddLocalization(option =>

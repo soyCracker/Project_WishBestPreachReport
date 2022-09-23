@@ -117,20 +117,29 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AddPeriod" xml:space="preserve">
+    <value>新增</value>
+  </data>
+  <data name="AddPeriodSuccess" xml:space="preserve">
+    <value>已新增</value>
+  </data>
   <data name="BibleStudyNum" xml:space="preserve">
-    <value>聖經課程數量</value>
+    <value>聖經課程</value>
   </data>
   <data name="DistributeNum" xml:space="preserve">
-    <value>分發數量</value>
+    <value>分發</value>
   </data>
   <data name="MediaPlayNum" xml:space="preserve">
-    <value>影音撥放數量</value>
+    <value>影音撥放</value>
   </data>
-  <data name="Overview" xml:space="preserve">
+  <data name="OverviewTitle" xml:space="preserve">
     <value>概覽</value>
   </data>
   <data name="PageTitle" xml:space="preserve">
     <value>首頁</value>
+  </data>
+  <data name="PeriodConflictAlert" xml:space="preserve">
+    <value>時段衝突無法新增</value>
   </data>
   <data name="PreachHourTime" xml:space="preserve">
     <value>傳道時數</value>
@@ -146,5 +155,17 @@
   </data>
   <data name="ReviewNum" xml:space="preserve">
     <value>續訪數量</value>
+  </data>
+  <data name="TimePeriodTitle" xml:space="preserve">
+    <value>時段</value>
+  </data>
+  <data name="TimeTitle" xml:space="preserve">
+    <value>時間</value>
+  </data>
+  <data name="UpdateFail" xml:space="preserve">
+    <value>更新失敗</value>
+  </data>
+  <data name="UpdateSuccess" xml:space="preserve">
+    <value>更新成功</value>
   </data>
 </root>
