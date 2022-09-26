@@ -1,0 +1,11 @@
+﻿#saveBtn {
+    position:fixed;
+    bottom: 20%;
+    right: 5vw;
+}
+
+#wbprAlert {
+    position: fixed;
+    bottom: 5%;
+    left: 5vw;
+}
