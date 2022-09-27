@@ -7,7 +7,7 @@ namespace WBPR.Service.Services
     {
         private readonly string folder = "WBPR_TEST";
 
-        public MessageModel<bool> Delete(string fileName, string filepath)
+        public async Task<MessageModel<bool>> Delete(string fileName, string filepath)
         {
             string fullFileName = Path.Combine(filepath, fileName);
             if (File.Exists(fullFileName))
@@ -25,7 +25,7 @@ namespace WBPR.Service.Services
             };
         }
 
-        public MessageModel<StorageGetRes> Get(string fileName, string filepath)
+        public async Task<MessageModel<StorageGetRes>> Get(string fileName, string filepath)
         {
             string fullFileName = Path.Combine(filepath, fileName);
             if (File.Exists(fullFileName))
@@ -55,7 +55,7 @@ namespace WBPR.Service.Services
             };
         }
 
-        public MessageModel<bool> Save(string fileName, string filepath, byte[] data)
+        public async Task<MessageModel<bool>> Save(string fileName, string filepath, byte[] data)
         {
             if (!Directory.Exists(filepath))
             {

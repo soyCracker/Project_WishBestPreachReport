@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
@@ -13,7 +14,11 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddMudServices();
 builder.Services.AddScoped<IPreachReportService, PreachReportService>();
-builder.Services.AddScoped<IStorageService, TestLocalStorageService>();
+//builder.Services.AddScoped<IStorageService, TestLocalStorageService>();
+builder.Services.AddScoped<IStorageService, BrowserLocalStorageService>();
+
+
+builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 

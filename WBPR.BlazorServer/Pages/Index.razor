@@ -19,7 +19,7 @@
 <PageTitle>@langLoc["PageTitle"]</PageTitle>
 
 <div id="saveBtn">
-    <MudFab StartIcon="@Icons.Material.Filled.Save" Color="Color.Primary" OnClick="Update"/>
+    <MudFab StartIcon="@Icons.Material.Filled.Save" Color="Color.Primary" OnClick="@(async()=> await Update())"/>
 </div>
 
 <MudStack AlignItems="AlignItems.Center">
@@ -144,7 +144,7 @@
 
     private async Task InitPreachReportData(DateTimeOffset dateTimeOffset)
     {
-        var mm = preachReportService.Get(dateTimeOffset, null, localPath);
+        var mm = await preachReportService.Get(dateTimeOffset, null, localPath);
         if (mm.Success)
         {
             prData = mm.Data;
@@ -229,9 +229,9 @@
         }
     }
 
-    private void Update()
+    private async Task Update()
     {
-        var mm = preachReportService.Update(prData, null, localPath);
+        var mm = await preachReportService.Update(prData, null, localPath);
         if(mm.Success)
         {
             ShowAlert(langLoc["UpdateSuccess"], Severity.Success);

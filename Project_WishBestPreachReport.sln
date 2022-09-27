@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WBPR.BlazorServer", "WBPR.B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WBPR.Service", "WBPR.Service\WBPR.Service.csproj", "{83979D2C-33AF-4035-A634-D2A45D2C0A70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WBPR.Wasm", "WBPR.Wasm\WBPR.Wasm.csproj", "{4938807C-DF2C-46BC-94FC-375C84669D1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WBPR.Wasm", "WBPR.Wasm\WBPR.Wasm.csproj", "{4938807C-DF2C-46BC-94FC-375C84669D1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

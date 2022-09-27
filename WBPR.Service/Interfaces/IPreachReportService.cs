@@ -5,7 +5,7 @@ namespace WBPR.Service.Interfaces
 {
     public interface IPreachReportService
     {
-        MessageModel<bool> Update(PreachReportData data, string filename, string filepath);
-        MessageModel<PreachReportData> Get(DateTimeOffset dateTimeOffset, string fileName, string filepath);
+        Task<MessageModel<bool>> Update(PreachReportData data, string filename, string filepath);
+        Task<MessageModel<PreachReportData>> Get(DateTimeOffset dateTimeOffset, string fileName, string filepath);
     }
 }

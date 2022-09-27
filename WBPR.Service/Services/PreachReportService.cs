@@ -16,11 +16,11 @@ namespace WBPR.Service.Services
             this.storageService = storageService;
         }
 
-        public MessageModel<PreachReportData> Get(DateTimeOffset dateTimeOffset, string fileName, string filepath)
+        public async Task<MessageModel<PreachReportData>> Get(DateTimeOffset dateTimeOffset, string fileName, string filepath)
         {
             string dateFlag = dateTimeOffset.DateTime.ToString("yyyyMMdd");
             string filename = CommonConstant.DATA_FILE_NAME_PREFIX + dateFlag;
-            var mm = storageService.Get(filename, filepath);
+            var mm = await storageService.Get(filename, filepath);
             if (mm.Success)
             {
                 using StreamReader sr = new StreamReader(new MemoryStream(mm.Data.Data));
@@ -38,13 +38,14 @@ namespace WBPR.Service.Services
             };
         }
 
-        MessageModel<bool> IPreachReportService.Update(PreachReportData data, string filekey, string filepath)
+        public async Task<MessageModel<bool>> Update(PreachReportData data, string filekey, string filepath)
         {
             DateTime utcTime = data.PreachDate.DateTime;
             string fileName = CommonConstant.DATA_FILE_NAME_PREFIX + utcTime.ToString("yyyyMMdd");
-            if (storageService.Get(fileName, filepath).Success)
+            var mm = await storageService.Get(fileName, filepath);
+            if (mm.Success)
             {
-                storageService.Delete(fileName, filepath);
+                await storageService.Delete(fileName, filepath);
             }
             string resStr = JsonSerializer.Serialize(data);
             using MemoryStream ms = new MemoryStream();
@@ -52,7 +53,7 @@ namespace WBPR.Service.Services
             sw.WriteLine(resStr);
             sw.Flush();
             var bytes = ms.ToArray();
-            var saveRes = storageService.Save(fileName, filepath, bytes);
+            var saveRes = await storageService.Save(fileName, filepath, bytes);
             return new MessageModel<bool>
             {
                 Success = saveRes.Data,
