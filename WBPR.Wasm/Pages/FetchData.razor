@@ -1,7 +1,19 @@
 ﻿@page "/fetchdata"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Graph
 @inject HttpClient Http
+@attribute [Authorize]
+@inject GraphServiceClient graphClient
 
 <PageTitle>Weather forecast</PageTitle>
+
+@if (user != null)
+{
+    <p>Mobile Phone: @user.MobilePhone</p>
+    <p>User Name: @user.DisplayName</p>
+    <p>Mail: @user.Mail</p>
+@*    <p>File: @user.Drive.Root.WebUrl</p>*@
+}
 
 <h1>Weather forecast</h1>
 
@@ -38,10 +50,13 @@ else
 
 @code {
     private WeatherForecast[]? forecasts;
+    private User user;
 
     protected override async Task OnInitializedAsync()
     {
         forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        var request = graphClient.Me.Request();
+        user = await request.GetAsync();
     }
 
     public class WeatherForecast

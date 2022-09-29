@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-hant">
 
 <head>
     <meta charset="utf-8" />
@@ -11,10 +11,23 @@
     <link href="WBPR.Wasm.styles.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <!--<link href="_content/BlazorPro.Spinkit/spinkit.min.css" rel="stylesheet" />-->
 </head>
 
 <body>
     <div id="app">Loading...</div>
+
+    <!--<div id="app">
+        <div class="modal-overlay">
+            <div class="sk-wave">
+                <div class="sk-wave-rect"></div>
+                <div class="sk-wave-rect"></div>
+                <div class="sk-wave-rect"></div>
+                <div class="sk-wave-rect"></div>
+                <div class="sk-wave-rect"></div>
+            </div>
+        </div>
+    </div>-->
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.
@@ -29,7 +42,10 @@
             set: (value) => window.localStorage['BlazorCulture'] = value
         };
     </script>
+    <script src="_content/Microsoft.Authentication.WebAssembly.Msal/AuthenticationService.js"></script>
     <script src="js/output/TimeUtil.js"></script>
+    <!-- Font Awesome   -->
+    <script src="https://kit.fontawesome.com/4206fe85f1.js" crossorigin="anonymous"></script>
 </body>
 
 </html>
