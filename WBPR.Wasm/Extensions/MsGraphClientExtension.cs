@@ -35,6 +35,8 @@ namespace WBPR.Wasm.Extensions
 
         private class NoOpGraphAuthenticationProvider : IAuthenticationProvider
         {
+            private readonly string graphUrl = "https://graph.microsoft.com/";
+
             public NoOpGraphAuthenticationProvider(IAccessTokenProvider tokenProvider)
             {
                 TokenProvider = tokenProvider;
@@ -48,10 +50,11 @@ namespace WBPR.Wasm.Extensions
                     new AccessTokenRequestOptions()
                     {
                         Scopes = new[] {
-                            "https://graph.microsoft.com/User.Read",
-                            "https://graph.microsoft.com/Mail.Read",
-                            "https://graph.microsoft.com/Files.Read",
-                            "https://graph.microsoft.com/Files.Read.All"
+                            graphUrl + "User.Read",
+                            graphUrl + "Files.Read",
+                            graphUrl + "Files.Read.All",
+                            graphUrl + "Files.ReadWrite",
+                            graphUrl + "Files.ReadWrite.All"
                         }
                     });
 

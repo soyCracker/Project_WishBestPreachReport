@@ -2,18 +2,25 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.Graph
 @inject HttpClient Http
-@attribute [Authorize]
 @inject GraphServiceClient graphClient
+
+@attribute [Authorize]
 
 <PageTitle>Weather forecast</PageTitle>
 
-@if (user != null)
-{
-    <p>Mobile Phone: @user.MobilePhone</p>
-    <p>User Name: @user.DisplayName</p>
-    <p>Mail: @user.Mail</p>
-@*    <p>File: @user.Drive.Root.WebUrl</p>*@
-}
+<AuthorizeView>
+    <Authorized>
+        @if (user != null)
+        {
+            <p>User Name: @user.DisplayName</p>
+            foreach(var file in listItem)
+            {
+                <p>@file.Id: @file.Name</p>
+            }
+    
+        }
+    </Authorized>
+</AuthorizeView>
 
 <h1>Weather forecast</h1>
 
@@ -51,12 +58,15 @@ else
 @code {
     private WeatherForecast[]? forecasts;
     private User user;
+    private IDriveItemChildrenCollectionPage listItem;
 
     protected override async Task OnInitializedAsync()
     {
         forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
         var request = graphClient.Me.Request();
         user = await request.GetAsync();
+        var req2 = graphClient.Me.Drive.Root.Children.Request();
+        listItem = await req2.GetAsync();
     }
 
     public class WeatherForecast

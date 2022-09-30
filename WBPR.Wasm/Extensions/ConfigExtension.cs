@@ -12,11 +12,18 @@ namespace WBPR.Wasm.Extensions
             serviceCollection.AddMsalAuthentication(options =>
             {
                 options.ProviderOptions.Authentication.ClientId = Constant.MS_AUTH_CLIENT_ID;
-                options.ProviderOptions.Authentication.Authority =
-                    string.Format("https://login.microsoftonline.com/{0}", Constant.MS_AUTH_TENANT_ID);
+                //options.ProviderOptions.Authentication.Authority =
+                //    string.Format("https://login.microsoftonline.com/{0}", Constant.MS_AUTH_TENANT_ID);
+                //Microsoft identity platform v2.0才支援多租用戶，但目前不支援&prompt=select_account選擇帳號
+                //Azure AD 資訊清單 - allowPublicClient:true, signInAudience: AzureADandPersonalMicrosoftAccount
+                options.ProviderOptions.Authentication.Authority = "https://login.microsoftonline.com/common";
                 options.ProviderOptions.Authentication.ValidateAuthority = true;
                 options.ProviderOptions.LoginMode = "redirect";
-                options.ProviderOptions.Authentication.PostLogoutRedirectUri = "/";
+                options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/User.Read");
+                options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.Read");
+                options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.Read.All");
+                options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.ReadWrite");
+                options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.ReadWrite.All");
             });
         }
 
