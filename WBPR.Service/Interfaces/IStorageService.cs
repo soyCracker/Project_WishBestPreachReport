@@ -4,8 +4,8 @@ namespace WBPR.Service.Interfaces
 {
     public interface IStorageService
     {
-        Task<MessageModel<bool>> Save(string fileName, string filepath, byte[] bytes);
-        Task<MessageModel<StorageGetRes>> Get(string fileName, string filepath);
-        Task<MessageModel<bool>> Delete(string fileName, string filepath);
+        Task<MessageModel<bool>> Save(string filepath, string fileName, byte[] bytes);
+        Task<MessageModel<StorageGetRes>> Get(string filepath, string fileName);
+        Task<MessageModel<bool>> Delete(string filepath, string fileName);
     }
 }

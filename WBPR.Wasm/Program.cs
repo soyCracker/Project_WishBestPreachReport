@@ -13,7 +13,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddMudServices();
 builder.Services.AddScoped<IPreachReportService, PreachReportService>();
-builder.Services.AddScoped<IStorageService, BrowserLocalStorageService>();
+builder.Services.AddScoped<IStorageService, OnedriveService>();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddGraphClient();

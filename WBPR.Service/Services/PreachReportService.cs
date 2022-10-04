@@ -16,11 +16,11 @@ namespace WBPR.Service.Services
             this.storageService = storageService;
         }
 
-        public async Task<MessageModel<PreachReportData>> Get(DateTimeOffset dateTimeOffset, string fileName, string filepath)
+        public async Task<MessageModel<PreachReportData>> Get(DateTimeOffset dateTimeOffset)
         {
             string dateFlag = dateTimeOffset.DateTime.ToString("yyyyMMdd");
-            string filename = CommonConstant.DATA_FILE_NAME_PREFIX + dateFlag;
-            var mm = await storageService.Get(filename, filepath);
+            string filename = CommonConstant.DATA_FILE_NAME_PREFIX + "_" + dateFlag;
+            var mm = await storageService.Get(CommonConstant.DATA_FILE_NAME_PREFIX, filename);
             if (mm.Success)
             {
                 using StreamReader sr = new StreamReader(new MemoryStream(mm.Data.Data));
@@ -38,14 +38,14 @@ namespace WBPR.Service.Services
             };
         }
 
-        public async Task<MessageModel<bool>> Update(PreachReportData data, string filekey, string filepath)
+        public async Task<MessageModel<bool>> Update(PreachReportData data)
         {
             DateTime utcTime = data.PreachDate.DateTime;
-            string fileName = CommonConstant.DATA_FILE_NAME_PREFIX + utcTime.ToString("yyyyMMdd");
-            var mm = await storageService.Get(fileName, filepath);
+            string fileName = CommonConstant.DATA_FILE_NAME_PREFIX + "_" + utcTime.ToString("yyyyMMdd");
+            var mm = await storageService.Get(CommonConstant.DATA_FILE_NAME_PREFIX, fileName);
             if (mm.Success)
             {
-                await storageService.Delete(fileName, filepath);
+                await storageService.Delete(CommonConstant.DATA_FILE_NAME_PREFIX, fileName);
             }
             string resStr = JsonSerializer.Serialize(data);
             using MemoryStream ms = new MemoryStream();
@@ -53,7 +53,7 @@ namespace WBPR.Service.Services
             sw.WriteLine(resStr);
             sw.Flush();
             var bytes = ms.ToArray();
-            var saveRes = await storageService.Save(fileName, filepath, bytes);
+            var saveRes = await storageService.Save(CommonConstant.DATA_FILE_NAME_PREFIX, fileName, bytes);
             return new MessageModel<bool>
             {
                 Success = saveRes.Data,

@@ -10,14 +10,17 @@
 
 <AuthorizeView>
     <Authorized>
-        @if (user != null)
+        @*@if (user != null)
         {
             <p>User Name: @user.DisplayName</p>
             foreach(var file in listItem)
             {
                 <p>@file.Id: @file.Name</p>
             }
-    
+        }*@
+        @if(target!=null)
+        {
+            <p>target -- @target.Id: @target.Name</p>
         }
     </Authorized>
 </AuthorizeView>
@@ -59,14 +62,19 @@ else
     private WeatherForecast[]? forecasts;
     private User user;
     private IDriveItemChildrenCollectionPage listItem;
+    private DriveItem target;
 
     protected override async Task OnInitializedAsync()
     {
         forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
-        var request = graphClient.Me.Request();
-        user = await request.GetAsync();
-        var req2 = graphClient.Me.Drive.Root.Children.Request();
-        listItem = await req2.GetAsync();
+
+        //DriveItem folder = await GetId("WBPR_DATA 1");
+        //if(folder!=null)
+        //{
+        //    await DeleteFolder(folder.Id);
+        //}
+        //await ListAll();
+        await Get();
     }
 
     public class WeatherForecast
@@ -78,5 +86,47 @@ else
         public string? Summary { get; set; }
 
         public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+
+    private async Task ListAll()
+    {
+        var request = graphClient.Me.Request();
+        user = await request.GetAsync();
+        var req2 = graphClient.Me.Drive.Root.Children.Request();
+        listItem = await req2.GetAsync();
+    }
+
+    private async Task CreateFolder()
+    {
+        var driveItem = new DriveItem
+            {
+                Name = "WBPR_DATA",
+                Folder = new Folder { },
+                AdditionalData = new Dictionary<string, object>()
+                {
+                    {"@microsoft.graph.conflictBehavior", "rename"}
+                }
+            };
+        await graphClient.Me.Drive.Root.Children.Request().AddAsync(driveItem);
+    }
+
+    private async Task<DriveItem> GetId(string name)
+    {
+        var itemList = await graphClient.Me.Drive.Root.Search(name).Request().GetAsync();
+        var folder = itemList.SingleOrDefault(x => x.Folder != null && x.Name == name);
+        return folder;
+    }
+
+    private async Task DeleteFolder(string itemId)
+    {
+        await graphClient.Me.Drive.Items[itemId]
+            .Request()
+            .DeleteAsync();
+    }
+
+    private async Task Get()
+    {
+        string fileName = "WPBR_DATA_20221004";
+        target = await graphClient.Me.Drive.Root.ItemWithPath("WPBR_DATA/WPBR_DATA_20221004").Request().GetAsync();
     }
 }

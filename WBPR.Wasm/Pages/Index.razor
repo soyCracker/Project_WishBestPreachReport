@@ -8,11 +8,16 @@
 @using WBPR.Service.Interfaces
 @using Microsoft.Extensions.Localization
 @using WBPR.Wasm.Utils
+@using Microsoft.AspNetCore.Authorization
+@*@using Microsoft.Graph*@
 @inject IStringLocalizer<Index> langLoc
 @inject IJSRuntime jsRuntime
 @inject ILogger<Index> logger
 @inject ISnackbar snackbar
 @inject IPreachReportService preachReportService 
+@*@inject HttpClient Http
+@inject GraphServiceClient graphClient*@
+@attribute [Authorize]
 
 <PageTitle>@langLoc["PageTitle"]</PageTitle>
 
@@ -22,6 +27,7 @@
 
 <MudStack AlignItems="AlignItems.Center">
 
+    <MudText Typo="Typo.h5">isLoading: @isLoading</MudText>
     <MudText Typo="Typo.h5">@langLoc["OverviewTitle"]</MudText>
     <MudItem>
         <MudPaper Class="pa-4" Elevation="4">
@@ -96,13 +102,20 @@
 
 </MudStack>
 
+@*@if(isLoading)
+{
+    <MudOverlay DarkBackground="true" AutoClose="true" />
+    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+}*@
+
 @code {
     private DateTime displayPreachDate = DateTime.Today;
     private DateTime maxDate = DateTime.Today;
     private TimeSpan? startTime = new TimeSpan(09, 30, 00);
     private TimeSpan? endTime = new TimeSpan(11, 30, 00);
     private PreachReportData prData = new PreachReportData();
-    private string localPath = "";
+    private bool isLoading = false;
+    private bool firstRun = true; 
 
     protected override async Task OnInitializedAsync()
     {
@@ -128,19 +141,13 @@
         DateTimeOffset clientTime = await BlazorTimeUtil.GetClientDate(jsRuntime);
         displayPreachDate = clientTime.DateTime;
         maxDate = clientTime.DateTime;
-        if (GetDataFromCloud() != null)
-        {
-
-        }
-        else
-        {
-            await InitPreachReportData(clientTime);
-        }
+        await InitPreachReportData(clientTime);
     }
 
     private async Task InitPreachReportData(DateTimeOffset dateTimeOffset)
     {
-        var mm = await preachReportService.Get(dateTimeOffset, null, localPath);
+        isLoading = true;
+        var mm = await preachReportService.Get(dateTimeOffset);
         if (mm.Success)
         {
             prData = mm.Data;
@@ -158,14 +165,22 @@
             prData.PreachReportTimes = new List<PreachReportTimePeriod>();
             prData.UpdateTime = dateTimeOffset;
         }
+        isLoading = false;
     }
 
     private async Task PreachDateChanged(DateTime? date)
     {
-        displayPreachDate = date.Value;
-        var timeSpan = await BlazorTimeUtil.GetClientTimezoneOffset(jsRuntime);
-        await InitPreachReportData(new DateTimeOffset(date.Value, timeSpan));
-        //prData.PreachDate = new DateTimeOffset(date.Value, timeSpan).ToUniversalTime();
+        if(firstRun)
+        {
+            firstRun = false;
+        }
+        else
+        {
+            //await Update();
+            displayPreachDate = date.Value;
+            var timeSpan = await BlazorTimeUtil.GetClientTimezoneOffset(jsRuntime);
+            await InitPreachReportData(new DateTimeOffset(date.Value, timeSpan));
+        }
         //logger.LogDebug("Index PreachDateChanged() prData.PreachDate: " + prData.PreachDate);
     }
 
@@ -227,7 +242,7 @@
 
     private async Task Update()
     {
-        var mm = await preachReportService.Update(prData, null, localPath);
+        var mm = await preachReportService.Update(prData);
         if (mm.Success)
         {
             ShowAlert(langLoc["UpdateSuccess"], Severity.Success);

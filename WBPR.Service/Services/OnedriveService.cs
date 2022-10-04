@@ -1,21 +1,22 @@
-﻿using Blazored.LocalStorage;
+﻿using Microsoft.Graph;
 using WBPR.Service.Interfaces;
 using WBPR.Service.Models.Response;
 
 namespace WBPR.Service.Services
 {
-    public class BrowserLocalStorageService : IStorageService
+    public class OnedriveService : IStorageService
     {
-        private readonly ILocalStorageService localStorage;
+        private readonly GraphServiceClient graphClient;
 
-        public BrowserLocalStorageService(ILocalStorageService localStorage)
+        public OnedriveService(GraphServiceClient graphClient)
         {
-            this.localStorage = localStorage;
+            this.graphClient = graphClient;
         }
 
         public async Task<MessageModel<bool>> Delete(string filepath, string fileName)
         {
-            await localStorage.RemoveItemAsync(filepath + "/" + fileName);
+            var req = graphClient.Me.Drive.Root.ItemWithPath(filepath + "/" + fileName).Request();
+            await req.DeleteAsync();
             return new MessageModel<bool>
             {
                 Data = true
@@ -24,10 +25,13 @@ namespace WBPR.Service.Services
 
         public async Task<MessageModel<StorageGetRes>> Get(string filepath, string fileName)
         {
-            bool isExist = await localStorage.ContainKeyAsync(filepath + "/" + fileName);
-            if (isExist)
+            var item = await graphClient.Me.Drive.Root.ItemWithPath(filepath + "/" + fileName).Content.Request().GetAsync();
+            if (item != null)
             {
-                byte[] data = await localStorage.GetItemAsync<byte[]>(filepath + "/" + fileName);
+                using MemoryStream ms = new MemoryStream();
+                item.Seek(0, SeekOrigin.Begin);
+                item.CopyTo(ms);
+                byte[] data = ms.ToArray();
                 return new MessageModel<StorageGetRes>
                 {
                     Success = true,
@@ -52,9 +56,12 @@ namespace WBPR.Service.Services
 
         public async Task<MessageModel<bool>> Save(string filepath, string fileName, byte[] bytes)
         {
-            await localStorage.SetItemAsync(filepath + "/" + fileName, bytes);
+            using Stream stream = new MemoryStream(bytes);
+            var res = await graphClient.Me.Drive.Root.ItemWithPath(string.Format("{0}/{1}", filepath, fileName)).Content
+                            .Request().PutAsync<DriveItem>(stream);
             return new MessageModel<bool>
             {
+                Msg = "Save",
                 Data = true
             };
         }

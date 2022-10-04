@@ -2,6 +2,6 @@
 {
     public class CommonConstant
     {
-        public static readonly string DATA_FILE_NAME_PREFIX = "WPBR_DATA_";
+        public static readonly string DATA_FILE_NAME_PREFIX = "WPBR_DATA";
     }
 }
