@@ -1,0 +1,9 @@
+{
+  "EnvirMode": "DEV", //AWS, DEV
+
+  "MsAuth": {
+    "ClientID": "b5e32f43-d26d-409e-abd2-81c910f0eb4e",
+    "ClientSecret": "H4x8Q~5N4DzWELlU-xnU7VtoBcZu3dlnhdlH4amf",
+    "TenantId": "da114b60-0d10-45a2-8f43-bfd5bfda9758"
+  }
+}

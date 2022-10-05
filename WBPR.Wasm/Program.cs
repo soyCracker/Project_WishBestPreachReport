@@ -11,11 +11,21 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+//IHttpClientFactory
+builder.Services.AddHttpClient();
+var httpClient = new HttpClient()
+{
+    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+};
+builder.Services.AddScoped(sp => httpClient);
+//using var wbprSetting = await httpClient.GetAsync("WBPR.json");
+//using var stream = await wbprSetting.Content.ReadAsStreamAsync();
+//builder.Configuration.AddJsonStream(stream);
+
 builder.Services.AddMudServices();
 builder.Services.AddScoped<IPreachReportService, PreachReportService>();
 builder.Services.AddScoped<IStorageService, OnedriveService>();
 builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddGraphClient();
 builder.Services.SetMsAuth();
 
