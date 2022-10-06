@@ -1,6 +1,8 @@
 ﻿@page "/fetchdata"
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.Graph
+@using WBPR.Service.Models.Common
+@using System.Text.Json
 @inject HttpClient Http
 @inject GraphServiceClient graphClient
 
@@ -18,9 +20,9 @@
                 <p>@file.Id: @file.Name</p>
             }
         }*@
-        @if(target!=null)
+        @if(content!=null)
         {
-            <p>target -- @target.Id: @target.Name</p>
+            <p>target -- @content</p>
         }
     </Authorized>
 </AuthorizeView>
@@ -62,7 +64,7 @@ else
     private WeatherForecast[]? forecasts;
     private User user;
     private IDriveItemChildrenCollectionPage listItem;
-    private DriveItem target;
+    private string content = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -127,6 +129,16 @@ else
     private async Task Get()
     {
         string fileName = "WPBR_DATA_20221004";
-        target = await graphClient.Me.Drive.Root.ItemWithPath("WPBR_DATA/WPBR_DATA_20221004").Request().GetAsync();
+        var target = await graphClient.Me.Drive.Root.ItemWithPath("WPBR_DATA/WPBR_DATA_20221006").Content.Request().GetAsync();
+        if (target != null)
+        {
+            using MemoryStream ms = new MemoryStream();
+            target.Seek(0, SeekOrigin.Begin);
+            target.CopyTo(ms);
+            byte[] data = ms.ToArray();
+            using StreamReader sr = new StreamReader(new MemoryStream(data));
+            content = sr.ReadToEnd();
+
+        }
     }
 }

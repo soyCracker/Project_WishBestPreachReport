@@ -9,17 +9,26 @@
 @using Microsoft.Extensions.Localization
 @using WBPR.Wasm.Utils
 @using Microsoft.AspNetCore.Authorization
-@*@using Microsoft.Graph*@
+@using Microsoft.Graph
+@using WBPR.Service.Models.Response
 @inject IStringLocalizer<Index> langLoc
 @inject IJSRuntime jsRuntime
 @inject ILogger<Index> logger
 @inject ISnackbar snackbar
 @inject IPreachReportService preachReportService 
-@*@inject HttpClient Http
-@inject GraphServiceClient graphClient*@
+@inject HttpClient Http
+@inject GraphServiceClient graphClient
 @attribute [Authorize]
 
 <PageTitle>@langLoc["PageTitle"]</PageTitle>
+
+<MudOverlay @bind-Visible="isLoading" DarkBackground="true" AutoClose="true" />
+@if (isLoading)
+{
+    <div id="loadingProgress">
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true"/>
+    </div>     
+}
 
 <div id="saveBtn">
     <MudFab StartIcon="@Icons.Material.Filled.Save" Color="Color.Primary" OnClick="@(async()=>await Update())"/>
@@ -27,23 +36,22 @@
 
 <MudStack AlignItems="AlignItems.Center">
 
-    <MudText Typo="Typo.h5">isLoading: @isLoading</MudText>
     <MudText Typo="Typo.h5">@langLoc["OverviewTitle"]</MudText>
     <MudItem>
         <MudPaper Class="pa-4" Elevation="4">
             <MudDatePicker Date="displayPreachDate" Label="日期" 
             DateChanged="@(async(arg)=> await PreachDateChanged(arg))" MaxDate="maxDate"/>
             <br />
-            <MudNumericField @bind-Value="prData.ReviewNum" Label="@langLoc["ReviewNum"]" Variant="Variant.Text"
+            <MudNumericField @bind-Value="prData.ReviewNum" Label="@langLoc["ReviewNum"]" Variant="Variant.Outlined"
                                 Min="prData.BibleStudyNum>0?1:0" Max="1000" />
             <br />
-            <MudNumericField Value="prData.BibleStudyNum" Label="@langLoc["BibleStudyNum"]" Variant="Variant.Text"
+            <MudNumericField Value="prData.BibleStudyNum" Label="@langLoc["BibleStudyNum"]" Variant="Variant.Outlined"
                                 Min="0" Max="1000" ValueChanged="BibleStudyNumChanged" T="int" />
             <br />
             <MudNumericField @bind-Value="prData.DistributeNum" Label="@langLoc["DistributeNum"]"
-                                Variant="Variant.Text" Min="0" Max="1000" />
+                                Variant="Variant.Outlined" Min="0" Max="1000" />
             <br />
-            <MudNumericField @bind-Value="prData.MediaPlayNum" Label="@langLoc["MediaPlayNum"]" Variant="Variant.Text"
+            <MudNumericField @bind-Value="prData.MediaPlayNum" Label="@langLoc["MediaPlayNum"]" Variant="Variant.Outlined"
                                 Min="0" Max="1000" />
         </MudPaper>
     </MudItem>
@@ -60,7 +68,7 @@
             @if (@prData.PreachTimeRadio == (int)PreachRadioEnum.Hours)
             {
                     <MudNumericField @bind-Value="prData.PreachMinute" Label="@langLoc["PreachTimeLabel"]"
-                                Variant="Variant.Text" Min="0" Max="1440"/>
+                             Variant="Variant.Outlined" Min="0" Max="1440" />
 
             }
             else
@@ -75,38 +83,35 @@
 
     @if (prData.PreachTimeRadio == (int)PreachRadioEnum.Period)
     {
+        @if (prData.PreachReportTimes.Count()>0)
+        {
             <MudText Typo="Typo.h5">@langLoc["TimePeriodTitle"]</MudText>
+        }
         @for (int i = 0; i < prData.PreachReportTimes.Count(); i++)
         {
             var period = prData.PreachReportTimes[i];
             var pNo = i;
-                    <MudItem xs="12" sm="6">
-                        <MudPaper Class="pa-4" Elevation="4">
-                            <MudText Typo="Typo.h6">#@pNo</MudText>
-                            <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="Start"
-                           Time="period.StartTime.Subtract(prData.PreachDate)"
-                           TimeChanged="StartTimespanToHour" />
-                            <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="End"
-                           Time="period.EndTime.Subtract(prData.PreachDate)"
-                           TimeChanged="EndTimespanToHour" />
-                            <br />
-                            <div class="d-flex justify-space-between flex-grow-1 gap-4">
-                                <MudText Typo="Typo.body1">@langLoc["PreachHourTime"]: @Math.Round(period.EndTime.Subtract(period.StartTime).TotalHours, 2)</MudText>
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete"  
-                            Color="Color.Primary" Size="Size.Small" OnClick="@(()=>DeletePeriod(pNo))"/>
-                            </div>
-                        </MudPaper>
-                    </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudPaper Class="pa-4" Elevation="4">
+                    <MudText Typo="Typo.h6">#@pNo</MudText>
+                    <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="Start"
+                    Time="period.StartTime.Subtract(prData.PreachDate)"
+                    TimeChanged="StartTimespanToHour" />
+                    <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="End"
+                    Time="period.EndTime.Subtract(prData.PreachDate)"
+                    TimeChanged="EndTimespanToHour" />
+                    <br />
+                    <div class="d-flex justify-space-between flex-grow-1 gap-4">
+                        <MudText Typo="Typo.body1">@langLoc["PreachHourTime"]: @Math.Round(period.EndTime.Subtract(period.StartTime).TotalHours, 2)</MudText>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"  
+                    Color="Color.Primary" Size="Size.Small" OnClick="@(()=>DeletePeriod(pNo))"/>
+                    </div>
+                </MudPaper>
+            </MudItem>
         }
     }
 
 </MudStack>
-
-@*@if(isLoading)
-{
-    <MudOverlay DarkBackground="true" AutoClose="true" />
-    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
-}*@
 
 @code {
     private DateTime displayPreachDate = DateTime.Today;
@@ -147,6 +152,7 @@
     private async Task InitPreachReportData(DateTimeOffset dateTimeOffset)
     {
         isLoading = true;
+        StateHasChanged();
         var mm = await preachReportService.Get(dateTimeOffset);
         if (mm.Success)
         {
@@ -166,6 +172,7 @@
             prData.UpdateTime = dateTimeOffset;
         }
         isLoading = false;
+        StateHasChanged();
     }
 
     private async Task PreachDateChanged(DateTime? date)
@@ -242,7 +249,11 @@
 
     private async Task Update()
     {
+        isLoading = true;
+        StateHasChanged();
         var mm = await preachReportService.Update(prData);
+        isLoading = false;
+        StateHasChanged();
         if (mm.Success)
         {
             ShowAlert(langLoc["UpdateSuccess"], Severity.Success);

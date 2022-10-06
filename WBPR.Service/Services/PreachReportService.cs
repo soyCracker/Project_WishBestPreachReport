@@ -25,10 +25,14 @@ namespace WBPR.Service.Services
             {
                 using StreamReader sr = new StreamReader(new MemoryStream(mm.Data.Data));
                 string content = sr.ReadToEnd();
-                return new MessageModel<PreachReportData>
+                var res = JsonSerializer.Deserialize<PreachReportData>(content);
+                if (res.PreachDate>DateTimeOffset.MinValue)
                 {
-                    Data = JsonSerializer.Deserialize<PreachReportData>(content)
-                };
+                    return new MessageModel<PreachReportData>
+                    {
+                        Data = JsonSerializer.Deserialize<PreachReportData>(content)
+                    };
+                }
             }
             return new MessageModel<PreachReportData>
             {
@@ -42,11 +46,11 @@ namespace WBPR.Service.Services
         {
             DateTime utcTime = data.PreachDate.DateTime;
             string fileName = CommonConstant.DATA_FILE_NAME_PREFIX + "_" + utcTime.ToString("yyyyMMdd");
-            var mm = await storageService.Get(CommonConstant.DATA_FILE_NAME_PREFIX, fileName);
-            if (mm.Success)
-            {
-                await storageService.Delete(CommonConstant.DATA_FILE_NAME_PREFIX, fileName);
-            }
+            //var mm = await storageService.Get(CommonConstant.DATA_FILE_NAME_PREFIX, fileName);
+            //if (mm.Success)
+            //{
+            //    await storageService.Delete(CommonConstant.DATA_FILE_NAME_PREFIX, fileName);
+            //}
             string resStr = JsonSerializer.Serialize(data);
             using MemoryStream ms = new MemoryStream();
             using StreamWriter sw = new StreamWriter(ms, Encoding.UTF8);

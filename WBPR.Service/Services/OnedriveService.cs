@@ -25,12 +25,13 @@ namespace WBPR.Service.Services
 
         public async Task<MessageModel<StorageGetRes>> Get(string filepath, string fileName)
         {
-            var item = await graphClient.Me.Drive.Root.ItemWithPath(filepath + "/" + fileName).Content.Request().GetAsync();
-            if (item != null)
+            var stream = await graphClient.Me.Drive.Root.ItemWithPath(filepath + "/" + fileName).Content.Request().GetAsync();
+
+            if (stream.Length!=0)
             {
                 using MemoryStream ms = new MemoryStream();
-                item.Seek(0, SeekOrigin.Begin);
-                item.CopyTo(ms);
+                stream.Seek(0, SeekOrigin.Begin);
+                stream.CopyTo(ms);
                 byte[] data = ms.ToArray();
                 return new MessageModel<StorageGetRes>
                 {
@@ -59,10 +60,19 @@ namespace WBPR.Service.Services
             using Stream stream = new MemoryStream(bytes);
             var res = await graphClient.Me.Drive.Root.ItemWithPath(string.Format("{0}/{1}", filepath, fileName)).Content
                             .Request().PutAsync<DriveItem>(stream);
+            if (res != null)
+            {
+                return new MessageModel<bool>
+                {
+                    Msg = "Save",
+                    Data = true
+                };
+            }
             return new MessageModel<bool>
             {
+                Success = false,
                 Msg = "Save",
-                Data = true
+                Data = false
             };
         }
     }

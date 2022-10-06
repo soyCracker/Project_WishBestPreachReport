@@ -11,7 +11,6 @@ namespace WBPR.Wasm.Extensions
         {
             serviceCollection.AddMsalAuthentication(options =>
             {
-
                 options.ProviderOptions.Authentication.ClientId = Constant.MS_AUTH_CLIENT_ID;
                 //options.ProviderOptions.Authentication.Authority =
                 //    string.Format("https://login.microsoftonline.com/{0}", Constant.MS_AUTH_TENANT_ID);

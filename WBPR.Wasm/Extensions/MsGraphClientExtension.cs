@@ -7,8 +7,7 @@ namespace WBPR.Wasm.Extensions
 {
     public static class MsGraphClientExtension
     {
-        public static IServiceCollection AddGraphClient(
-        this IServiceCollection services, params string[] scopes)
+        public static IServiceCollection AddGraphClient(this IServiceCollection services, params string[] scopes)
         {
             services.Configure<RemoteAuthenticationOptions<MsalProviderOptions>>(
                 options =>
