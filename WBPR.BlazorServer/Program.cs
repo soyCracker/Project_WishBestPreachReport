@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using MudBlazor.Services;
 using WBPR.BlazorServer.Data;
 using WBPR.Service.Interfaces;
@@ -10,8 +11,13 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddMudServices();
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddControllers();
+
 builder.Services.AddScoped<IPreachReportService, PreachReportService>();
-builder.Services.AddScoped<IStorageService, TestLocalStorageService>();
+builder.Services.AddScoped<IStorageService, PrDataBrowserLocalStorageService>();
+builder.Services.AddScoped<IBrowserLocalStorageService, BrowserLocalStorageService>();
+builder.Services.AddScoped<ISettingService, SettingService>();
 
 //»y¨t
 builder.Services.AddLocalization(option =>
@@ -22,9 +28,11 @@ builder.Services.AddLocalization(option =>
 var app = builder.Build();
 
 //»y¨t
+var supportedCultures = new[] { "zh-Hant", "en-US" };
 app.UseRequestLocalization(new RequestLocalizationOptions()
-    .AddSupportedCultures(new[] { "zh-Hant", "en-US" })
-    .AddSupportedUICultures(new[] { "zh-Hant", "en-US" }));
+    .SetDefaultCulture(supportedCultures[1])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures));
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -40,6 +48,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 

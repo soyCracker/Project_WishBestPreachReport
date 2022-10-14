@@ -4,55 +4,57 @@ using WBPR.Service.Models.Response;
 
 namespace WBPR.Service.Services
 {
-    public class BrowserLocalStorageService : IStorageService
+    public class BrowserLocalStorageService : IBrowserLocalStorageService
     {
         private readonly ILocalStorageService localStorage;
 
         public BrowserLocalStorageService(ILocalStorageService localStorage)
         {
-            this.localStorage = localStorage;
+            this.localStorage=localStorage;
         }
 
-        public async Task<MessageModel<bool>> Delete(string filepath, string fileName)
+        public async Task<MessageModel<bool>> DelKey(string key)
         {
-            await localStorage.RemoveItemAsync(filepath + "/" + fileName);
+            await localStorage.RemoveItemAsync(key);
             return new MessageModel<bool>
             {
                 Data = true
             };
         }
 
-        public async Task<MessageModel<StorageGetRes>> Get(string filepath, string fileName)
+        public async Task<MessageModel<T>> Get<T>(string key)
         {
-            bool isExist = await localStorage.ContainKeyAsync(filepath + "/" + fileName);
+            bool isExist = await localStorage.ContainKeyAsync(key);
             if (isExist)
             {
-                byte[] data = await localStorage.GetItemAsync<byte[]>(filepath + "/" + fileName);
-                return new MessageModel<StorageGetRes>
+                T data = await localStorage.GetItemAsync<T>(key);
+                return new MessageModel<T>
                 {
                     Success = true,
-                    Data = new StorageGetRes
-                    {
-                        Name = fileName,
-                        Data = data
-                    }
+                    Data = data
                 };
             }
-            return new MessageModel<StorageGetRes>
+            return new MessageModel<T>
             {
                 Success = false,
-                Msg = string.Format("No data: {0}", fileName),
-                Data = new StorageGetRes
-                {
-                    Name = "",
-                    Data = new byte[0]
-                }
+                Msg = string.Format("No data: {0}", key),
+                Data = default
             };
         }
 
-        public async Task<MessageModel<bool>> Save(string filepath, string fileName, byte[] bytes)
+        public Task<MessageModel<bool>> GetBoolData(string key)
         {
-            await localStorage.SetItemAsync(filepath + "/" + fileName, bytes);
+            throw new NotImplementedException();
+        }
+
+        public Task<MessageModel<string>> GetStrData(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<MessageModel<bool>> Save<T>(string key, T value)
+        {
+            await localStorage.SetItemAsync(key, value);
             return new MessageModel<bool>
             {
                 Data = true

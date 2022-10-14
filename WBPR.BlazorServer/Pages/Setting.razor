@@ -1,0 +1,34 @@
+﻿@page "/setting"
+@using Microsoft.Extensions.Localization
+@using WBPR.Service.Interfaces
+@using WBPR.Service.Models.Common
+@inject IStringLocalizer<Setting> langLoc
+@inject ISettingService settingService
+
+<PageTitle>WBPR - @langLoc["PageTitle"]</PageTitle>
+
+<MudStack AlignItems="AlignItems.Center">
+
+    <MudText Typo="Typo.h5">@langLoc["Appearance"]</MudText>
+    <MudItem>
+        <MudPaper Class="pa-4" Elevation="4">
+            
+            <MudSwitch Checked="@(blazorUiInfo==null?false:blazorUiInfo.IsDarkMode)"
+                       Label="@langLoc["DarkMode"]" Color="Color.Primary" 
+                       CheckedChanged="@(async(value)=>await SetDarkMode(value))" T="bool" />
+        </MudPaper>
+    </MudItem>
+
+</MudStack>
+
+@code {
+    [CascadingParameter]
+    protected BlazorUiInfo blazorUiInfo { get; set; }
+
+    private async Task SetDarkMode(bool value)
+    {
+        blazorUiInfo.IsDarkMode = value;
+        await settingService.SetDarkTheme(value);
+        StateHasChanged();
+    }
+}

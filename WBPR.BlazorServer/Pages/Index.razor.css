@@ -1,5 +1,5 @@
 ﻿#saveBtn {
-    position:fixed;
+    position: fixed;
     bottom: 20%;
     right: 5vw;
 }
@@ -8,4 +8,11 @@
     position: fixed;
     bottom: 5%;
     left: 5vw;
+}
+
+#loadingProgress {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
 }

@@ -8,8 +8,13 @@
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.10" />
     <PackageReference Include="Microsoft.Graph" Version="4.42.0" />
     <PackageReference Include="Microsoft.JSInterop" Version="6.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WBPR.Base\WBPR.Base.csproj" />
   </ItemGroup>
 
 </Project>

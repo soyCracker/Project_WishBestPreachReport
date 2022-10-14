@@ -12,7 +12,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.7" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Authentication.WebAssembly.Msal" Version="6.0.7" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.7" />
     <PackageReference Include="Microsoft.Graph" Version="4.42.0" />
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.4">
       <PrivateAssets>all</PrivateAssets>
@@ -23,7 +22,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WBPR.Base\WBPR.Base.csproj" />
-    <ProjectReference Include="..\WBPR.Service.Common\WBPR.Service.Common.csproj" />
     <ProjectReference Include="..\WBPR.Service\WBPR.Service.csproj" />
   </ItemGroup>
 
@@ -32,6 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Resources\Pages\Index.zh.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Update="Resources\Pages\Index.en.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>

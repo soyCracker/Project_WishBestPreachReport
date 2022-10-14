@@ -1,8 +1,15 @@
 ﻿@inherits LayoutComponentBase
+@using System.Globalization
+@using WBPR.Service.Models.Common
+@using WBPR.Service.Interfaces
+@using WBPR.BlazorServer.Utils
+@inject IJSRuntime jsRuntime
+@inject ISettingService settingService
+@inject NavigationManager navigation
 
 <PageTitle>WBPR.BlazorServer</PageTitle>
 
-<MudThemeProvider Theme="@MyCustomTheme" @bind-IsDarkMode="@isDarkMode" />
+<MudThemeProvider Theme="@MyCustomTheme" @bind-IsDarkMode="@blazorUiInfo.IsDarkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
@@ -10,8 +17,9 @@
     <MudAppBar Elevation="0">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => ToggleNavMenu())" />
         <MudSpacer />
-        <MudIconButton Icon="@lighOrDarkIcon" Color="Color.Inherit" OnClick="@ToggleDarkMode" />
+        @*<MudIconButton Icon="@lighOrDarkIcon" Color="Color.Inherit" OnClick="@ToggleDarkMode" />*@
         @*<MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Link="https://mudblazor.com/" Target="_blank" />*@
+        <MudText>@testLang</MudText>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
         <MudDrawerHeader>
@@ -21,34 +29,91 @@
     </MudDrawer>
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.Large" Class="my-16 pt-16">
-            @Body
+
+            @*層級傳遞參數*@
+            <CascadingValue Value="@blazorUiInfo">
+                @Body
+            </CascadingValue>
+            
         </MudContainer>
     </MudMainContent>
 </MudLayout>
 
 @code {
     bool _drawerOpen = true;
-    public bool isDarkMode = false;
     private string lighOrDarkIcon = Icons.Filled.LightMode;
+    private BlazorUiInfo blazorUiInfo = new BlazorUiInfo();
+    private string testLang = "XX";
+
+    protected override async Task OnInitializedAsync()
+    {
+        blazorUiInfo.IsDarkMode = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Init();
+        }   
+    }
+
+    private async Task Init()
+    {
+        await SetLang();
+
+        var darkRes = await settingService.IsDarkTheme();
+        blazorUiInfo.IsDarkMode = darkRes.Data;
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task SetLang()
+    {
+        string browserLang = await JsUtil.GetBrowserLang(jsRuntime);
+        testLang = "browserLang:" + browserLang;
+        var res = await settingService.GetLang();    
+        if(res.Success)
+        {
+            string setLang = res.Data;
+            testLang += " setLang:" + setLang;
+            if (setLang == browserLang)
+            {
+                return;
+            }
+        }
+        
+        await settingService.SetLang(browserLang);
+
+        var uri = new Uri(navigation.Uri)
+                    .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+        var cultureEscaped = Uri.EscapeDataString(browserLang);
+        var uriEscaped = Uri.EscapeDataString(uri);
+
+        navigation.NavigateTo(
+            $"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}",
+            forceLoad: true);
+    }
 
     private void ToggleNavMenu()
     {
         _drawerOpen = !_drawerOpen;
     }
 
-    private void ToggleDarkMode()
-    {
-        isDarkMode = !isDarkMode;
-        lighOrDarkIcon = isDarkMode ? Icons.Filled.DarkMode : Icons.Filled.LightMode;
-    }
+    //private void ToggleDarkMode()
+    //{
+    //    isDarkMode = !isDarkMode;
+    //    lighOrDarkIcon = isDarkMode ? Icons.Filled.DarkMode : Icons.Filled.LightMode;
+    //}
 
     MudTheme MyCustomTheme = new MudTheme()
         {
             Palette = new Palette()
             {
-                Primary = "#EC407A",//Colors.Pink.Accent1,
+                Primary = "#D1878B",
                 Secondary = Colors.Green.Accent4,
-                AppbarBackground = "EC407A",//Colors.Pink.Accent1,
+                AppbarBackground = "D1878B",
+                // 御召茶 #43676B #5B7B82
+                // 浅蘇芳 #D1878B #A25768
             },
             //PaletteDark = new Palette()
             //{

@@ -1,25 +1,34 @@
 ﻿@page "/"
 @using System
 @using System.IO
-@using System.Globalization
 @using WBPR.Service.Models.Common
 @using WBPR.Service.Utils
-@using WBPR.BlazorServer.Utils
 @using Microsoft.Extensions.Logging
 @using WBPR.Service.Constants
 @using WBPR.Service.Interfaces
-@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Localization
+@using WBPR.BlazorServer.Utils
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Graph
+@using WBPR.Service.Models.Response
 @inject IStringLocalizer<Index> langLoc
 @inject IJSRuntime jsRuntime
 @inject ILogger<Index> logger
 @inject ISnackbar snackbar
-@inject IPreachReportService preachReportService 
-@inject IWebHostEnvironment Environment
+@inject IPreachReportService preachReportService
 
-<PageTitle>@langLoc["PageTitle"]</PageTitle>
+<PageTitle>WBPR - @langLoc["PageTitle"]</PageTitle>
+
+<MudOverlay @bind-Visible="isLoading" DarkBackground="true" AutoClose="true" />
+@if (isLoading)
+{
+    <div id="loadingProgress">
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+    </div>
+}
 
 <div id="saveBtn">
-    <MudFab StartIcon="@Icons.Material.Filled.Save" Color="Color.Primary" OnClick="@(async()=> await Update())"/>
+    <MudFab StartIcon="@Icons.Material.Filled.Save" Color="Color.Primary" OnClick="@(async()=>await Update())" />
 </div>
 
 <MudStack AlignItems="AlignItems.Center">
@@ -27,20 +36,20 @@
     <MudText Typo="Typo.h5">@langLoc["OverviewTitle"]</MudText>
     <MudItem>
         <MudPaper Class="pa-4" Elevation="4">
-            <MudDatePicker Date="displayPreachDate" Label="日期" 
-            DateChanged="@(async(arg)=> await PreachDateChanged(arg))" MaxDate="maxDate"/>
+            <MudDatePicker Date="displayPreachDate" Label="日期"
+                           DateChanged="@(async(arg)=> await PreachDateChanged(arg))" MaxDate="maxDate" />
             <br />
-            <MudNumericField @bind-Value="prData.ReviewNum" Label="@langLoc["ReviewNum"]" Variant="Variant.Text"
-                                Min="prData.BibleStudyNum>0?1:0" Max="1000" />
+            <MudNumericField @bind-Value="prData.ReviewNum" Label="@langLoc["ReviewNum"]" Variant="Variant.Outlined"
+                             Min="prData.BibleStudyNum>0?1:0" Max="1000" />
             <br />
-            <MudNumericField Value="prData.BibleStudyNum" Label="@langLoc["BibleStudyNum"]" Variant="Variant.Text"
-                                Min="0" Max="1000" ValueChanged="BibleStudyNumChanged" T="int" />
+            <MudNumericField Value="prData.BibleStudyNum" Label="@langLoc["BibleStudyNum"]" Variant="Variant.Outlined"
+                             Min="0" Max="1000" ValueChanged="BibleStudyNumChanged" T="int" />
             <br />
             <MudNumericField @bind-Value="prData.DistributeNum" Label="@langLoc["DistributeNum"]"
-                                Variant="Variant.Text" Min="0" Max="1000" />
+                             Variant="Variant.Outlined" Min="0" Max="1000" />
             <br />
-            <MudNumericField @bind-Value="prData.MediaPlayNum" Label="@langLoc["MediaPlayNum"]" Variant="Variant.Text"
-                                Min="0" Max="1000" />
+            <MudNumericField @bind-Value="prData.MediaPlayNum" Label="@langLoc["MediaPlayNum"]" Variant="Variant.Outlined"
+                             Min="0" Max="1000" />
         </MudPaper>
     </MudItem>
 
@@ -48,7 +57,7 @@
     <MudItem>
         <MudPaper Class="pa-4" Elevation="4">
             <MudText Typo="Typo.body1">@langLoc["PreachHourTime"]: @ComputeDisplayPreachHours()</MudText>
-            
+
             <MudRadioGroup @bind-SelectedOption="@prData.PreachTimeRadio">
                 <MudRadio Option="(int)PreachRadioEnum.Hours" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="true">@langLoc["PreachTimePicker_Editable"]</MudRadio>
                 <MudRadio Option="(int)PreachRadioEnum.Period" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="false">@langLoc["PreachTimePicker_Dialog"]</MudRadio>
@@ -56,7 +65,7 @@
             @if (@prData.PreachTimeRadio == (int)PreachRadioEnum.Hours)
             {
                 <MudNumericField @bind-Value="prData.PreachMinute" Label="@langLoc["PreachTimeLabel"]"
-                                Variant="Variant.Text" Min="0" Max="1440"/>
+                             Variant="Variant.Outlined" Min="0" Max="1440" />
 
             }
             else
@@ -68,11 +77,14 @@
             }
         </MudPaper>
     </MudItem>
-    
+
     @if (prData.PreachTimeRadio == (int)PreachRadioEnum.Period)
     {
-        <MudText Typo="Typo.h5">@langLoc["TimePeriodTitle"]</MudText>
-        @for (int i=0;i<prData.PreachReportTimes.Count();i++)
+        @if (prData.PreachReportTimes.Count()>0)
+        {
+            <MudText Typo="Typo.h5">@langLoc["TimePeriodTitle"]</MudText>
+        }
+        @for (int i = 0; i < prData.PreachReportTimes.Count(); i++)
         {
             var period = prData.PreachReportTimes[i];
             var pNo = i;
@@ -88,14 +100,14 @@
                     <br />
                     <div class="d-flex justify-space-between flex-grow-1 gap-4">
                         <MudText Typo="Typo.body1">@langLoc["PreachHourTime"]: @Math.Round(period.EndTime.Subtract(period.StartTime).TotalHours, 2)</MudText>
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"  
-                            Color="Color.Primary" Size="Size.Small" OnClick="@(()=>DeletePeriod(pNo))"/>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Color="Color.Primary" Size="Size.Small" OnClick="@(()=>DeletePeriod(pNo))" />
                     </div>
                 </MudPaper>
             </MudItem>
         }
     }
-    
+
 </MudStack>
 
 @code {
@@ -104,19 +116,18 @@
     private TimeSpan? startTime = new TimeSpan(09, 30, 00);
     private TimeSpan? endTime = new TimeSpan(11, 30, 00);
     private PreachReportData prData = new PreachReportData();
-    private string localPath = "";
+    private bool isLoading = false;
+    private bool firstRun = true;
 
     protected override async Task OnInitializedAsync()
     {
         logger.LogDebug("Index OnInitializedAsync()");
         prData.PreachReportTimes = new List<PreachReportTimePeriod>();
-        localPath = Path.Combine(Environment.ContentRootPath,
-                        Environment.WebRootPath, "WBPR_TEST");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(firstRender)
+        if (firstRender)
         {
             //var timeSpan = await TimezoneUtil.GetTimezoneOffset(jsRuntime);
             //testTime = DateTime.UtcNow.Add(timeSpan);
@@ -132,19 +143,14 @@
         DateTimeOffset clientTime = await BlazorTimeUtil.GetClientDate(jsRuntime);
         displayPreachDate = clientTime.DateTime;
         maxDate = clientTime.DateTime;
-        if (GetDataFromCloud()!=null)
-        {
-
-        }
-        else
-        {
-            await InitPreachReportData(clientTime);
-        } 
+        await InitPreachReportData(clientTime);
     }
 
     private async Task InitPreachReportData(DateTimeOffset dateTimeOffset)
     {
-        var mm = await preachReportService.Get(dateTimeOffset, null, localPath);
+        isLoading = true;
+        StateHasChanged();
+        var mm = await preachReportService.Get(dateTimeOffset);
         if (mm.Success)
         {
             prData = mm.Data;
@@ -162,14 +168,23 @@
             prData.PreachReportTimes = new List<PreachReportTimePeriod>();
             prData.UpdateTime = dateTimeOffset;
         }
+        isLoading = false;
+        StateHasChanged();
     }
 
     private async Task PreachDateChanged(DateTime? date)
     {
-        displayPreachDate = date.Value;
-        var timeSpan = await BlazorTimeUtil.GetClientTimezoneOffset(jsRuntime);
-        await InitPreachReportData(new DateTimeOffset(date.Value, timeSpan));
-        //prData.PreachDate = new DateTimeOffset(date.Value, timeSpan).ToUniversalTime();
+        if (firstRun)
+        {
+            firstRun = false;
+        }
+        else
+        {
+            //await Update();
+            displayPreachDate = date.Value;
+            var timeSpan = await BlazorTimeUtil.GetClientTimezoneOffset(jsRuntime);
+            await InitPreachReportData(new DateTimeOffset(date.Value, timeSpan));
+        }
         //logger.LogDebug("Index PreachDateChanged() prData.PreachDate: " + prData.PreachDate);
     }
 
@@ -193,7 +208,7 @@
 
     private void ReviewNumChk()
     {
-        if(prData.BibleStudyNum>0 && prData.ReviewNum==0)
+        if (prData.BibleStudyNum > 0 && prData.ReviewNum == 0)
         {
             prData.ReviewNum = 1;
         }
@@ -202,7 +217,7 @@
     private void BibleStudyNumChanged(int val)
     {
         prData.BibleStudyNum = val;
-        if(prData.BibleStudyNum>0 && prData.ReviewNum==0)
+        if (prData.BibleStudyNum > 0 && prData.ReviewNum == 0)
         {
             prData.ReviewNum++;
         }
@@ -213,8 +228,8 @@
         var st = prData.PreachDate.Add((TimeSpan)startTime);
         var et = prData.PreachDate.Add((TimeSpan)endTime);
         if (prData.PreachReportTimes.Any(
-            x => (st >= x.StartTime && st <= x.EndTime) || (et >= x.StartTime && et <= x.EndTime) || 
-                    (st<x.StartTime && et>x.EndTime) ) )
+            x => (st >= x.StartTime && st <= x.EndTime) || (et >= x.StartTime && et <= x.EndTime) ||
+                    (st < x.StartTime && et > x.EndTime)))
         {
             ShowAlert(langLoc["PeriodConflictAlert"], Severity.Error);
         }
@@ -231,8 +246,12 @@
 
     private async Task Update()
     {
-        var mm = await preachReportService.Update(prData, null, localPath);
-        if(mm.Success)
+        isLoading = true;
+        StateHasChanged();
+        var mm = await preachReportService.Update(prData);
+        isLoading = false;
+        StateHasChanged();
+        if (mm.Success)
         {
             ShowAlert(langLoc["UpdateSuccess"], Severity.Success);
         }
@@ -268,7 +287,7 @@
         }
         else
         {
-            var hours = prData.PreachReportTimes.Sum(x=>
+            var hours = prData.PreachReportTimes.Sum(x =>
                 x.EndTime.DateTime.Subtract(x.StartTime.DateTime).TotalHours);
             return Math.Round(hours, 2);
         }
