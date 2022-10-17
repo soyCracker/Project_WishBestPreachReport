@@ -27,10 +27,10 @@ builder.Services.AddLocalization(option =>
 
 var app = builder.Build();
 
-//語系
-var supportedCultures = new[] { "zh-Hant", "en-US" };
+//語系 ***取得的瀏覽器語系不是預期的zh-hant而是zh-tw，所以決定只設定語系'-'前字元
+var supportedCultures = new[] { "en", "zh" };
 app.UseRequestLocalization(new RequestLocalizationOptions()
-    .SetDefaultCulture(supportedCultures[1])
+    .SetDefaultCulture(supportedCultures[0])
     .AddSupportedCultures(supportedCultures)
     .AddSupportedUICultures(supportedCultures));
 
