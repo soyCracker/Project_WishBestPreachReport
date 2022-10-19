@@ -1,13 +1,18 @@
-using Blazored.LocalStorage;
+ï»¿using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 using MudBlazor.Services;
 using WBPR.BlazorServer.Data;
+using WBPR.BlazorServer.Extension;
 using WBPR.Service.Interfaces;
 using WBPR.Service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddMudServices();
@@ -19,20 +24,24 @@ builder.Services.AddScoped<IStorageService, PrDataBrowserLocalStorageService>();
 builder.Services.AddScoped<IBrowserLocalStorageService, BrowserLocalStorageService>();
 builder.Services.AddScoped<ISettingService, SettingService>();
 
-//»y¨t
-builder.Services.AddLocalization(option =>
+builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
+builder.Services.AddControllersWithViews(options =>
 {
-    option.ResourcesPath = "Resources";
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+    options.Filters.Add(new AuthorizeFilter(policy));
 });
+builder.Services.AddRazorPages().AddMicrosoftIdentityUI();
+
+//èªžç³»
+builder.Services.AddCultureResource();
 
 var app = builder.Build();
 
-//»y¨t ***¨ú±oªºÂsÄý¾¹»y¨t¤£¬O¹w´Áªºzh-hant¦Ó¬Ozh-tw¡A©Ò¥H¨M©w¥u³]©w»y¨t'-'«e¦r¤¸
-var supportedCultures = new[] { "en", "zh" };
-app.UseRequestLocalization(new RequestLocalizationOptions()
-    .SetDefaultCulture(supportedCultures[0])
-    .AddSupportedCultures(supportedCultures)
-    .AddSupportedUICultures(supportedCultures));
+//èªžç³»
+app.SetCulture();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -43,13 +52,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseRouting();
-
 app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-
 app.Run();

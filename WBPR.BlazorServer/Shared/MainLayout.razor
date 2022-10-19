@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @using System.Globalization
+@using WBPR.BlazorServer.Resources.Shared
 @using WBPR.Service.Models.Common
 @using WBPR.Service.Interfaces
 @using WBPR.BlazorServer.Utils
@@ -20,6 +21,7 @@
         @*<MudIconButton Icon="@lighOrDarkIcon" Color="Color.Inherit" OnClick="@ToggleDarkMode" />*@
         @*<MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Link="https://mudblazor.com/" Target="_blank" />*@
         @*<MudText>@testLang</MudText>*@
+        <LoginDisplay />
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
         <MudDrawerHeader>
@@ -45,7 +47,7 @@
     private BlazorUiInfo blazorUiInfo = new BlazorUiInfo();
     //private string testLang = "XX";
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         blazorUiInfo.IsDarkMode = true;
     }
