@@ -4,9 +4,11 @@
 @using WBPR.Service.Models.Common
 @using WBPR.Service.Interfaces
 @using WBPR.BlazorServer.Utils
+@using Microsoft.AspNetCore.Authorization
 @inject IJSRuntime jsRuntime
 @inject ISettingService settingService
 @inject NavigationManager navigation
+@attribute [Authorize]
 
 <PageTitle>WBPR.BlazorServer</PageTitle>
 

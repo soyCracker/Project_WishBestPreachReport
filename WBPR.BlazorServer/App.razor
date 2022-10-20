@@ -1,12 +1,42 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+﻿@using WBPR.Base.Config
+@inject NavigationManager navigationManager
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <MudText Typo="Typo.h5" Color="Color.Primary">Sorry, you can not aaccess this address.</MudText>
+                    @{
+                        //isAuth = false;
+                        // Exception https://github.com/dotnet/aspnetcore/issues/13582
+                        navigationManager.NavigateTo(Constant.MS_LOGIN_URL, forceLoad: true);
+                    }
+                </NotAuthorized>
+                <Authorizing>
+                    Loading...
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <MudText Typo="Typo.h3" Color="Color.Primary">Sorry, there's nothing at this address.</MudText>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+@code{
+    private bool isAuth = true;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        //if(!isAuth)
+        //{
+        //    isAuth = false;
+        //    uriHelper.NavigateTo(Constant.MS_LOGIN_URL, forceLoad: true);
+        //}
+    }
+}

@@ -1,9 +1,4 @@
 ﻿using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.UI;
 using MudBlazor.Services;
 using WBPR.BlazorServer.Data;
 using WBPR.BlazorServer.Extension;
@@ -13,28 +8,21 @@ using WBPR.Service.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddMudServices();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IPreachReportService, PreachReportService>();
 builder.Services.AddScoped<IStorageService, PrDataBrowserLocalStorageService>();
 builder.Services.AddScoped<IBrowserLocalStorageService, BrowserLocalStorageService>();
 builder.Services.AddScoped<ISettingService, SettingService>();
 
-builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
-builder.Services.AddControllersWithViews(options =>
-{
-    var policy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
-    options.Filters.Add(new AuthorizeFilter(policy));
-});
-builder.Services.AddRazorPages().AddMicrosoftIdentityUI();
-
+//Auth
+builder.Services.SetAuth();
 //語系
 builder.Services.AddCultureResource();
 

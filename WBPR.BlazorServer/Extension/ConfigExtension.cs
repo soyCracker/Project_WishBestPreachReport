@@ -1,10 +1,61 @@
-﻿namespace WBPR.BlazorServer.Extension
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.IdentityModel.Tokens;
+using WBPR.Base.Config;
+
+namespace WBPR.BlazorServer.Extension
 {
     public static class ConfigExtension
     {
-        public static void SetMsAuth(this IServiceCollection serviceCollection)
+        public static void SetAuth(this IServiceCollection serviceCollection)
         {
+            //builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+            //    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
+            //builder.Services.AddControllersWithViews(options =>
+            //{
+            //    var policy = new AuthorizationPolicyBuilder()
+            //        .RequireAuthenticatedUser()
+            //        .Build();
+            //    options.Filters.Add(new AuthorizeFilter(policy));
+            //});
+            //builder.Services.AddRazorPages().AddMicrosoftIdentityUI();
 
+            serviceCollection.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = "Azure AD / Microsoft";
+            })
+            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+            {
+                options.Events.OnRedirectToLogin = context =>
+                {
+                    //讓MVC及API驗證失敗時有不同的行為
+                    context.Response.Redirect(new PathString(Constant.MS_LOGIN_URL));
+                    return Task.CompletedTask;
+                };
+                // ExpireTimeSpan與Cookie.MaxAge都要設定
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                options.Cookie.MaxAge = options.ExpireTimeSpan;
+                //登入後過期時間內没有進行操作就會過期;false有操作還是會過期
+                options.SlidingExpiration = false;
+            })
+            .AddOpenIdConnect("Azure AD / Microsoft", "Azure AD / Microsoft", options =>
+            {
+                options.ClientId = Constant.MS_AUTH_CLIENT_ID;
+                options.ClientSecret = Constant.MS_AUTH_CLIENT_SECRET;
+                //options.SignInScheme = "Identity.External";
+                options.RemoteAuthenticationTimeout = TimeSpan.FromMinutes(30);
+                options.Authority = "https://login.microsoftonline.com/common/v2.0/";
+                options.ResponseType = "code";
+                options.Scope.Add("profile");
+                options.Scope.Add("email");
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    NameClaimType = "email",
+                };
+                //options.CallbackPath = "/signin-microsoft";
+                options.Prompt = "select_account"; // login, consent
+            });
         }
 
         public static void AddCultureResource(this IServiceCollection serviceCollection)

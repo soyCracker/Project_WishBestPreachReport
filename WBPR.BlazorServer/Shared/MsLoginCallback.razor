@@ -1,0 +1,17 @@
+﻿@page "/signin-microsoft"
+
+@inject NavigationManager navManager
+
+<h3>MsLoginCallback</h3>
+
+@code {
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            navManager.NavigateTo("/");
+        }
+
+    }
+}
