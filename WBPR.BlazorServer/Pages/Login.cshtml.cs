@@ -7,7 +7,8 @@ namespace WBPR.BlazorServer.Pages
     {
         public async Task OnGetAsync(string redirectUri)
         {
-            await HttpContext.ChallengeAsync("Azure AD / Microsoft", new AuthenticationProperties { RedirectUri = redirectUri });
+            //await HttpContext.ChallengeAsync("Microsoft", new AuthenticationProperties { RedirectUri = redirectUri });
+            await HttpContext.ChallengeAsync("OpenIdConnect", new AuthenticationProperties { RedirectUri = redirectUri });
         }
     }
 }

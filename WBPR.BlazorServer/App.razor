@@ -29,14 +29,13 @@
 </CascadingAuthenticationState>
 
 @code{
-    private bool isAuth = true;
+    //[Parameter]
+    //public string AccessToken { get; set; }
 
-    protected override void OnAfterRender(bool firstRender)
-    {
-        //if(!isAuth)
-        //{
-        //    isAuth = false;
-        //    uriHelper.NavigateTo(Constant.MS_LOGIN_URL, forceLoad: true);
-        //}
-    }
+    //protected override void OnInitialized()
+    //{
+    //    //Accept the parameter from _Host.cshtml and move into the Token Provider
+    //    TokenProvider.AccessToken = AccessToken;
+    //    base.OnInitialized();
+    //}
 }

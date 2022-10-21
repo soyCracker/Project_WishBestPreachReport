@@ -2,8 +2,10 @@
 @using Microsoft.Extensions.Localization
 @using WBPR.Service.Interfaces
 @using WBPR.Service.Models.Common
+@using WBPR.Service.Services
 @inject IStringLocalizer<Setting> langLoc
 @inject ISettingService settingService
+@inject GraphClientUtilService graphClientUtil
 
 <PageTitle>WBPR - @langLoc["PageTitle"]</PageTitle>
 
@@ -19,11 +21,22 @@
         </MudPaper>
     </MudItem>
 
+    <MudText Typo="Typo.h5">@res</MudText>
 </MudStack>
 
 @code {
     [CascadingParameter]
     protected BlazorUiInfo blazorUiInfo { get; set; }
+
+    private string res = "";
+
+    //protected override async Task OnAfterRenderAsync(bool firstRender)
+    //{
+    //    if(firstRender)
+    //    {
+    //        res = await graphClientUtil.GetRoot();
+    //    }
+    //}
 
     private async Task SetDarkMode(bool value)
     {

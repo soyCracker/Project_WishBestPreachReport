@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 using WBPR.Base.Config;
 
@@ -6,23 +8,21 @@ namespace WBPR.BlazorServer.Extension
 {
     public static class ConfigExtension
     {
-        public static void SetAuth(this IServiceCollection serviceCollection)
-        {
-            //builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-            //    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
-            //builder.Services.AddControllersWithViews(options =>
-            //{
-            //    var policy = new AuthorizationPolicyBuilder()
-            //        .RequireAuthenticatedUser()
-            //        .Build();
-            //    options.Filters.Add(new AuthorizeFilter(policy));
-            //});
-            //builder.Services.AddRazorPages().AddMicrosoftIdentityUI();
+        private static readonly string graphUrl = "https://graph.microsoft.com/";
+        private static readonly string[] scopes = new[] {
+                            "User.Read",
+                            "Files.Read",
+                            "Files.Read.All",
+                            "Files.ReadWrite",
+                            "Files.ReadWrite.All"
+                        };
 
+        public static void SetAuth(this IServiceCollection serviceCollection, IConfiguration configuration)
+        {
             serviceCollection.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = "Azure AD / Microsoft";
+                options.DefaultChallengeScheme = "Microsoft";
             })
             .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
             {
@@ -38,7 +38,7 @@ namespace WBPR.BlazorServer.Extension
                 //登入後過期時間內没有進行操作就會過期;false有操作還是會過期
                 options.SlidingExpiration = false;
             })
-            .AddOpenIdConnect("Azure AD / Microsoft", "Azure AD / Microsoft", options =>
+            .AddOpenIdConnect("Microsoft", "Microsoft", options =>
             {
                 options.ClientId = Constant.MS_AUTH_CLIENT_ID;
                 options.ClientSecret = Constant.MS_AUTH_CLIENT_SECRET;
@@ -55,7 +55,18 @@ namespace WBPR.BlazorServer.Extension
                 };
                 //options.CallbackPath = "/signin-microsoft";
                 options.Prompt = "select_account"; // login, consent
+                options.SaveTokens=true;
             });
+        }
+
+        public static void SetAuthTest(this IServiceCollection serviceCollection, IConfiguration configuration)
+        {
+            string[] initialScopes = configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
+            serviceCollection.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+            .AddMicrosoftIdentityWebApp(configuration.GetSection("AzureAd"))
+                .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
+                .AddMicrosoftGraph(configuration.GetSection("DownstreamApi"))
+                .AddInMemoryTokenCaches();
         }
 
         public static void AddCultureResource(this IServiceCollection serviceCollection)

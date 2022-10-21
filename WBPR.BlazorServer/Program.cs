@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using Microsoft.Identity.Web.UI;
 using MudBlazor.Services;
 using WBPR.BlazorServer.Data;
 using WBPR.BlazorServer.Extension;
@@ -8,21 +9,27 @@ using WBPR.Service.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages().AddMicrosoftIdentityUI();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddMudServices();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddControllers();
-builder.Services.AddHttpContextAccessor();
+//builder.Services.AddHttpContextAccessor();
+//IHttpClientFactory
+//builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<IPreachReportService, PreachReportService>();
 builder.Services.AddScoped<IStorageService, PrDataBrowserLocalStorageService>();
+//builder.Services.AddScoped<IStorageService, OnedriveService>();
 builder.Services.AddScoped<IBrowserLocalStorageService, BrowserLocalStorageService>();
 builder.Services.AddScoped<ISettingService, SettingService>();
+//builder.Services.AddScoped<TokenProvider>();
+//builder.Services.AddScoped<GraphClientUtilService>();
 
 //Auth
-builder.Services.SetAuth();
+builder.Services.SetAuthTest(builder.Configuration);
+
 //語系
 builder.Services.AddCultureResource();
 
