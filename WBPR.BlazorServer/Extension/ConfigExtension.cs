@@ -11,10 +11,7 @@ namespace WBPR.BlazorServer.Extension
         private static readonly string graphUrl = "https://graph.microsoft.com/";
         private static readonly string[] scopes = new[] {
                             "User.Read",
-                            "Files.Read",
-                            "Files.Read.All",
-                            "Files.ReadWrite",
-                            "Files.ReadWrite.All"
+                            "Files.ReadWrite"
                         };
 
         public static void SetAuth(this IServiceCollection serviceCollection, IConfiguration configuration)
@@ -38,16 +35,16 @@ namespace WBPR.BlazorServer.Extension
                 //登入後過期時間內没有進行操作就會過期;false有操作還是會過期
                 options.SlidingExpiration = false;
             })
-            .AddOpenIdConnect("Microsoft", "Microsoft", options =>
+            .AddOpenIdConnect("OpenIdConnect", "OpenIdConnect", options =>
             {
                 options.ClientId = Constant.MS_AUTH_CLIENT_ID;
                 options.ClientSecret = Constant.MS_AUTH_CLIENT_SECRET;
-                //options.SignInScheme = "Identity.External";
                 options.RemoteAuthenticationTimeout = TimeSpan.FromMinutes(30);
                 options.Authority = "https://login.microsoftonline.com/common/v2.0/";
                 options.ResponseType = "code";
-                options.Scope.Add("profile");
-                options.Scope.Add("email");
+                //options.Scope.Add("profile");
+                //options.Scope.Add("email");
+                //options.Scope.Add("offline_access");
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = false,
@@ -56,6 +53,10 @@ namespace WBPR.BlazorServer.Extension
                 //options.CallbackPath = "/signin-microsoft";
                 options.Prompt = "select_account"; // login, consent
                 options.SaveTokens=true;
+                foreach (var s in scopes)
+                {
+                    options.Scope.Add(s);
+                }
             });
         }
 
@@ -63,7 +64,7 @@ namespace WBPR.BlazorServer.Extension
         {
             string[] initialScopes = configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
             serviceCollection.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApp(configuration.GetSection("AzureAd"))
+                .AddMicrosoftIdentityWebApp(configuration.GetSection("AzureAd"))
                 .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
                 .AddMicrosoftGraph(configuration.GetSection("DownstreamApi"))
                 .AddInMemoryTokenCaches();

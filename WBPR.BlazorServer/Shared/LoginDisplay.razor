@@ -3,12 +3,13 @@
 <CascadingAuthenticationState>
     <AuthorizeView>
         <Authorized>
-            Hello, @context.User.Identity.Name!
-            @*<a href="MicrosoftIdentity/Account/SignOut">Logout</a>*@
-            <a href="logout">Logout</a>
+            Hello, @context.User.Identity.Name
+            <a href="MicrosoftIdentity/Account/SignOut">Logout</a>
+            @*<a href="logout">Logout</a>*@
         </Authorized>
         <NotAuthorized>
             <a href="@Constant.MS_LOGIN_URL">Login</a>
         </NotAuthorized>
     </AuthorizeView>
 </CascadingAuthenticationState>
+

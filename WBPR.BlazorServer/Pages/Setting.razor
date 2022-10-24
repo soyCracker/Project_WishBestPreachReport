@@ -1,11 +1,14 @@
 ﻿@page "/setting"
 @using Microsoft.Extensions.Localization
+@using Microsoft.Graph
 @using WBPR.Service.Interfaces
 @using WBPR.Service.Models.Common
 @using WBPR.Service.Services
+@using Microsoft.Identity.Web
 @inject IStringLocalizer<Setting> langLoc
 @inject ISettingService settingService
-@inject GraphClientUtilService graphClientUtil
+@inject GraphServiceClient GraphClient
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
 <PageTitle>WBPR - @langLoc["PageTitle"]</PageTitle>
 
@@ -30,13 +33,19 @@
 
     private string res = "";
 
-    //protected override async Task OnAfterRenderAsync(bool firstRender)
-    //{
-    //    if(firstRender)
-    //    {
-    //        res = await graphClientUtil.GetRoot();
-    //    }
-    //}
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            //res = await graphClientUtil.GetRoot();
+            var req = GraphClient.Me.Drive.Root.Children.Request();
+            var ress = req.GetAsync().Result;
+            foreach (var file in ress)
+            {
+                res += file.Id + ": " + file.Name + "\n";
+            }
+        }
+    }
 
     private async Task SetDarkMode(bool value)
     {

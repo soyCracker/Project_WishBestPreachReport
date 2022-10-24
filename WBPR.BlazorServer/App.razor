@@ -8,7 +8,6 @@
                 <NotAuthorized>
                     <MudText Typo="Typo.h5" Color="Color.Primary">Sorry, you can not aaccess this address.</MudText>
                     @{
-                        //isAuth = false;
                         // Exception https://github.com/dotnet/aspnetcore/issues/13582
                         navigationManager.NavigateTo(Constant.MS_LOGIN_URL, forceLoad: true);
                     }
@@ -27,15 +26,3 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
-
-@code{
-    //[Parameter]
-    //public string AccessToken { get; set; }
-
-    //protected override void OnInitialized()
-    //{
-    //    //Accept the parameter from _Host.cshtml and move into the Token Provider
-    //    TokenProvider.AccessToken = AccessToken;
-    //    base.OnInitialized();
-    //}
-}
