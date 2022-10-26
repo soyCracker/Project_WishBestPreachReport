@@ -59,17 +59,17 @@
             <MudDatePicker Date="displayPreachDate" Label="日期"
                            DateChanged="@(async(arg)=> await PreachDateChanged(arg))" MaxDate="maxDate" />
             <br />
-            <MudNumericField @bind-Value="prData.ReviewNum" Label="@langLoc["ReviewNum"]" Variant="Variant.Outlined"
-                             Min="prData.BibleStudyNum>0?1:0" Max="1000" />
+            <MudNumericField Value="prData.ReviewNum" Label="@langLoc["ReviewNum"]" Variant="Variant.Outlined"
+                             Min="prData.BibleStudyNum>0?1:0" Max="1000" ValueChanged="ReviewNumChanged" T="int"/>
             <br />
             <MudNumericField Value="prData.BibleStudyNum" Label="@langLoc["BibleStudyNum"]" Variant="Variant.Outlined"
                              Min="0" Max="1000" ValueChanged="BibleStudyNumChanged" T="int" />
             <br />
-            <MudNumericField @bind-Value="prData.DistributeNum" Label="@langLoc["DistributeNum"]"
-                             Variant="Variant.Outlined" Min="0" Max="1000" />
+            <MudNumericField Value="prData.DistributeNum" Label="@langLoc["DistributeNum"]"
+                             Variant="Variant.Outlined" Min="0" Max="1000" ValueChanged="DistributeNumChanged" T="int"/>
             <br />
-            <MudNumericField @bind-Value="prData.MediaPlayNum" Label="@langLoc["MediaPlayNum"]" Variant="Variant.Outlined"
-                             Min="0" Max="1000" />
+            <MudNumericField Value="prData.MediaPlayNum" Label="@langLoc["MediaPlayNum"]" Variant="Variant.Outlined"
+                             Min="0" Max="1000" ValueChanged="MediaPlayNumChanged" T="int"/>
         </MudPaper>
     </MudItem>
 
@@ -80,7 +80,7 @@
             <MudDivider DividerType="DividerType.Middle" Class="my-6" />
             <MudText Typo="Typo.body1">@langLoc["PreachHourTime"]: @ComputeDisplayPreachHours()</MudText>
             <br />
-            <MudRadioGroup @bind-SelectedOption="@prData.PreachTimeRadio">
+            <MudRadioGroup SelectedOption="@prData.PreachTimeRadio" SelectedOptionChanged="PreachTimeRadioChanged" T="int">
                 <MudRadio Option="(int)PreachRadioEnum.Hours" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="true">@langLoc["PreachTimePicker_Editable"]</MudRadio>
                 <MudRadio Option="(int)PreachRadioEnum.Period" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="false">@langLoc["PreachTimePicker_Dialog"]</MudRadio>
             </MudRadioGroup>
@@ -140,6 +140,7 @@
     private PreachReportMonthData prMonthData = new PreachReportMonthData();
     private bool isLoading = false;
     private bool firstRun = true;
+    private bool isAnyDataChange = false;
     private int monthDistributeNum = 0;
     private int monthMediaPlayNum = 0;
     private int monthReviewNum = 0;
@@ -227,7 +228,8 @@
         {
             return new PreachReportData 
             {
-                    PreachReportTimes = new List<PreachReportTimePeriod>()
+                PreachDate = dateTimeOffset,
+                PreachReportTimes = new List<PreachReportTimePeriod>()
             };
         }
         return res;
@@ -235,12 +237,16 @@
 
     private void SetMonthDisplayData(PreachReportMonthData data)
     {
+        month = displayPreachDate.Month;
         monthDistributeNum = data.MonthData.Sum(x => x.DistributeNum);
         monthMediaPlayNum = data.MonthData.Sum(x => x.MediaPlayNum);
         monthReviewNum = data.MonthData.Sum(x => x.ReviewNum);
         monthBibleStudyNum = data.MonthData.Sum(x => x.BibleStudyNum);
-        monthHours = Math.Round(data.MonthData.Sum(x => x.PreachMinute) / 60, 2);
-        month = displayPreachDate.Month;
+
+        double periodMinutes = data.MonthData.Where(r => r.PreachTimeRadio == (int)PreachRadioEnum.Period)
+            .Sum(x => x.PreachReportTimes.Sum(y => y.EndTime.DateTime.Subtract(y.StartTime.DateTime).TotalMinutes));
+        double minutes = data.MonthData.Where(r => r.PreachTimeRadio == (int)PreachRadioEnum.Hours).Sum(x => x.PreachMinute);
+        monthHours = Math.Round((periodMinutes + minutes) / 60, 2);
     }
 
     private async Task PreachDateChanged(DateTime? date)
@@ -255,6 +261,7 @@
             displayPreachDate = date.Value;
             var timeSpan = await BlazorTimeUtil.GetClientTimezoneOffset(jsRuntime);
             await InitPreachReportData(new DateTimeOffset(date.Value, timeSpan));
+            isAnyDataChange = true;
         }
         //logger.LogDebug("Index PreachDateChanged() prData.PreachDate: " + prData.PreachDate);
     }
@@ -266,6 +273,7 @@
         {
             endTime = startTime;
         }
+        isAnyDataChange = true;
     }
 
     private void EndTimespanToHour(TimeSpan? timeSpan)
@@ -275,14 +283,7 @@
         {
             startTime = endTime;
         }
-    }
-
-    private void ReviewNumChk()
-    {
-        if (prData.BibleStudyNum > 0 && prData.ReviewNum == 0)
-        {
-            prData.ReviewNum = 1;
-        }
+        isAnyDataChange = true;
     }
 
     private void BibleStudyNumChanged(int val)
@@ -292,6 +293,31 @@
         {
             prData.ReviewNum++;
         }
+        isAnyDataChange = true;
+    }
+
+    private void ReviewNumChanged(int val)
+    {
+        prData.ReviewNum = val;
+        isAnyDataChange = true;
+    }
+
+    private void DistributeNumChanged(int val)
+    {
+        prData.DistributeNum = val;
+        isAnyDataChange = true;
+    }
+
+    private void MediaPlayNumChanged(int val)
+    {
+        prData.MediaPlayNum = val;
+        isAnyDataChange = true;
+    }
+
+    private void PreachTimeRadioChanged(int val)
+    {
+        prData.PreachTimeRadio = val;
+        isAnyDataChange = true;
     }
 
     private void AddPeriod()
@@ -312,7 +338,14 @@
                     EndTime = et
                 });
             ShowAlert(langLoc["AddPeriodSuccess"], Severity.Info);
+            isAnyDataChange = true;
         }
+    }
+
+    private void DeletePeriod(int pNo)
+    {
+        prData.PreachReportTimes.RemoveAt(pNo);
+        isAnyDataChange = true;
     }
 
     private async Task Update()
@@ -355,16 +388,6 @@
         };
     }
 
-    private PreachReportData GetDataFromCloud()
-    {
-        return null;
-    }
-
-    private void DeletePeriod(int pNo)
-    {
-        prData.PreachReportTimes.RemoveAt(pNo);
-    }
-
     private void ShowAlert(string msg, Severity severity)
     {
         snackbar.Clear();
@@ -384,6 +407,37 @@
             var hours = prData.PreachReportTimes.Sum(x =>
                 x.EndTime.DateTime.Subtract(x.StartTime.DateTime).TotalHours);
             return Math.Round(hours, 2);
+        }
+    }
+
+    //自動存檔
+    private async Task AnyDataChanged()
+    {
+        isAnyDataChange = true;
+        var old = prMonthData.MonthData.SingleOrDefault(x => x.PreachDate.Day == prData.PreachDate.Day);
+        if (old!=null)
+        {
+            prMonthData.MonthData.Remove(old);
+        }
+        prMonthData.MonthData.Add(prData);
+        SetMonthDisplayData(prMonthData);
+
+        //等3秒
+        await Task.Delay(3 * 1000);
+        //有其他task已更新就略過
+        if(isAnyDataChange)
+        {
+            isAnyDataChange = false;
+            var mm = await UpdatePreachReportData(prMonthData);
+            StateHasChanged();
+            if (mm.Success)
+            {
+                ShowAlert(langLoc["UpdateSuccess"], Severity.Success);
+            }
+            else
+            {
+                ShowAlert(langLoc["UpdateFail"], Severity.Error);
+            }
         }
     }
 }
