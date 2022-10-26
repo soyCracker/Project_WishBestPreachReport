@@ -10,12 +10,14 @@
 @using WBPR.BlazorServer.Utils
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.Graph
+@using Microsoft.Identity.Web
 @using WBPR.Service.Models.Response
 @inject IStringLocalizer<Index> langLoc
 @inject IJSRuntime jsRuntime
 @inject ILogger<Index> logger
 @inject ISnackbar snackbar
 @inject IPreachReportService preachReportService
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 @attribute [Authorize]
 
 <PageTitle>WBPR - @langLoc["PageTitle"]</PageTitle>
@@ -33,10 +35,27 @@
 </div>
 
 <MudStack AlignItems="AlignItems.Center">
-
-    <MudText Typo="Typo.h5">@langLoc["OverviewTitle"]</MudText>
     <MudItem>
-        <MudPaper Class="pa-4" Elevation="4">
+        <MudPaper Class="pa-4" Elevation="4" Width="280px">
+            <MudText Typo="Typo.h6" Align="Align.Center">@month@langLoc["MonthSummary"]</MudText>
+            <MudDivider DividerType="DividerType.FullWidth" Class="my-6" />
+            <MudText Typo="Typo.body1">@langLoc["MonthHour"]: @monthHours</MudText>
+            <br />
+            <MudText Typo="Typo.body1">@langLoc["MonthDistributeNum"]: @monthDistributeNum</MudText>
+            <br />
+            <MudText Typo="Typo.body1">@langLoc["MonthMediaPlayNum"]: @monthMediaPlayNum</MudText>
+            <br />
+            <MudText Typo="Typo.body1">@langLoc["MonthReviewNum"]: @monthReviewNum</MudText>
+            <br />
+            <MudText Typo="Typo.body1">@langLoc["MonthBibleStudyNum"]: @monthBibleStudyNum</MudText>
+        </MudPaper>
+    </MudItem>
+
+    
+    <MudItem>
+        <MudPaper Class="pa-4" Elevation="4" Width="280px">
+            <MudText Typo="Typo.h6" Align="Align.Center">@langLoc["OverviewTitle"]</MudText>
+            <MudDivider DividerType="DividerType.Middle" Class="my-6" />
             <MudDatePicker Date="displayPreachDate" Label="日期"
                            DateChanged="@(async(arg)=> await PreachDateChanged(arg))" MaxDate="maxDate" />
             <br />
@@ -54,11 +73,13 @@
         </MudPaper>
     </MudItem>
 
-    <MudText Typo="Typo.h5">@langLoc["TimeTitle"]</MudText>
+    
     <MudItem>
-        <MudPaper Class="pa-4" Elevation="4">
+        <MudPaper Class="pa-4" Elevation="4" Width="280px">
+            <MudText Typo="Typo.h6" Align="Align.Center">@langLoc["TimeTitle"]</MudText>
+            <MudDivider DividerType="DividerType.Middle" Class="my-6" />
             <MudText Typo="Typo.body1">@langLoc["PreachHourTime"]: @ComputeDisplayPreachHours()</MudText>
-
+            <br />
             <MudRadioGroup @bind-SelectedOption="@prData.PreachTimeRadio">
                 <MudRadio Option="(int)PreachRadioEnum.Hours" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="true">@langLoc["PreachTimePicker_Editable"]</MudRadio>
                 <MudRadio Option="(int)PreachRadioEnum.Period" Color="Color.Primary" UnCheckedColor="Color.Default" Dense="false">@langLoc["PreachTimePicker_Dialog"]</MudRadio>
@@ -83,32 +104,31 @@
     {
         @if (prData.PreachReportTimes.Count()>0)
         {
-            <MudText Typo="Typo.h5">@langLoc["TimePeriodTitle"]</MudText>
-        }
-        @for (int i = 0; i < prData.PreachReportTimes.Count(); i++)
-        {
-            var period = prData.PreachReportTimes[i];
-            var pNo = i;
-            <MudItem xs="12" sm="6">
-                <MudPaper Class="pa-4" Elevation="4">
-                    <MudText Typo="Typo.h6">#@pNo</MudText>
-                    <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="Start"
+            <MudText Typo="Typo.h6">@langLoc["TimePeriodTitle"]</MudText>
+            @for (int i = 0; i < prData.PreachReportTimes.Count(); i++)
+            {
+                var period = prData.PreachReportTimes[i];
+                var pNo = i;
+                <MudItem xs="12" sm="6">
+                    <MudPaper Class="pa-4" Elevation="4" Width="280px">
+                        <MudText Typo="Typo.h6">#@pNo</MudText>
+                        <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="Start"
                            Time="period.StartTime.Subtract(prData.PreachDate)"
                            TimeChanged="StartTimespanToHour" />
-                    <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="End"
+                        <MudTimePicker PickerVariant="PickerVariant.Dialog" Label="End"
                            Time="period.EndTime.Subtract(prData.PreachDate)"
                            TimeChanged="EndTimespanToHour" />
-                    <br />
-                    <div class="d-flex justify-space-between flex-grow-1 gap-4">
-                        <MudText Typo="Typo.body1">@langLoc["PreachHourTime"]: @Math.Round(period.EndTime.Subtract(period.StartTime).TotalHours, 2)</MudText>
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                        <br />
+                        <div class="d-flex justify-space-between flex-grow-1 gap-4">
+                            <MudText Typo="Typo.body1">@langLoc["PreachHourTime"]: @Math.Round(period.EndTime.Subtract(period.StartTime).TotalHours, 2)</MudText>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                Color="Color.Primary" Size="Size.Small" OnClick="@(()=>DeletePeriod(pNo))" />
-                    </div>
-                </MudPaper>
-            </MudItem>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            }
         }
     }
-
 </MudStack>
 
 @code {
@@ -117,13 +137,21 @@
     private TimeSpan? startTime = new TimeSpan(09, 30, 00);
     private TimeSpan? endTime = new TimeSpan(11, 30, 00);
     private PreachReportData prData = new PreachReportData();
+    private PreachReportMonthData prMonthData = new PreachReportMonthData();
     private bool isLoading = false;
     private bool firstRun = true;
+    private int monthDistributeNum = 0;
+    private int monthMediaPlayNum = 0;
+    private int monthReviewNum = 0;
+    private int monthBibleStudyNum = 0;
+    private double monthHours = 0;
+    private int month = 0;
 
     protected override async Task OnInitializedAsync()
     {
         logger.LogDebug("Index OnInitializedAsync()");
         prData.PreachReportTimes = new List<PreachReportTimePeriod>();
+        prMonthData.MonthData = new List<PreachReportData>();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -151,10 +179,12 @@
     {
         isLoading = true;
         StateHasChanged();
-        var mm = await preachReportService.Get(dateTimeOffset);
+        var mm = await GetPreachReportData(dateTimeOffset);
         if (mm.Success)
         {
-            prData = mm.Data;
+            prMonthData = mm.Data;
+            prData = GetSingleDateData(prMonthData, dateTimeOffset);
+            SetMonthDisplayData(prMonthData);
             await InvokeAsync(() => StateHasChanged());
         }
         else
@@ -171,6 +201,46 @@
         }
         isLoading = false;
         StateHasChanged();
+    }
+
+    private async Task<MessageModel<PreachReportMonthData>> GetPreachReportData(DateTimeOffset dateTimeOffset)
+    {
+        try
+        {
+            return await preachReportService.Get(dateTimeOffset);
+        }
+        catch(Exception ex)
+        {
+            //似乎token過期，透過MicrosoftIdentityConsentAndConditionalAccessHandler觸發重登入
+            ConsentHandler.HandleException(ex);
+        }
+        return new MessageModel<PreachReportMonthData>
+        {
+            Success = false
+        };
+    }
+
+    private PreachReportData GetSingleDateData(PreachReportMonthData monthData, DateTimeOffset dateTimeOffset)
+    {
+        var res = monthData.MonthData.SingleOrDefault(x=>x.PreachDate.Day==dateTimeOffset.Day);
+        if(res==null)
+        {
+            return new PreachReportData 
+            {
+                    PreachReportTimes = new List<PreachReportTimePeriod>()
+            };
+        }
+        return res;
+    }
+
+    private void SetMonthDisplayData(PreachReportMonthData data)
+    {
+        monthDistributeNum = data.MonthData.Sum(x => x.DistributeNum);
+        monthMediaPlayNum = data.MonthData.Sum(x => x.MediaPlayNum);
+        monthReviewNum = data.MonthData.Sum(x => x.ReviewNum);
+        monthBibleStudyNum = data.MonthData.Sum(x => x.BibleStudyNum);
+        monthHours = Math.Round(data.MonthData.Sum(x => x.PreachMinute) / 60, 2);
+        month = displayPreachDate.Month;
     }
 
     private async Task PreachDateChanged(DateTime? date)
@@ -249,7 +319,13 @@
     {
         isLoading = true;
         StateHasChanged();
-        var mm = await preachReportService.Update(prData);
+        var old = prMonthData.MonthData.SingleOrDefault(x => x.PreachDate.Day == prData.PreachDate.Day);
+        if(old!=null)
+        {
+            prMonthData.MonthData.Remove(old);
+        }
+        prMonthData.MonthData.Add(prData);
+        var mm = await UpdatePreachReportData(prMonthData);
         isLoading = false;
         StateHasChanged();
         if (mm.Success)
@@ -260,6 +336,23 @@
         {
             ShowAlert(langLoc["UpdateFail"], Severity.Error);
         }
+    }
+
+    private async Task<MessageModel<bool>> UpdatePreachReportData(PreachReportMonthData data)
+    {
+        try
+        {
+            return await preachReportService.Update(data);
+        }
+        catch(Exception ex)
+        {
+            //似乎token過期，透過MicrosoftIdentityConsentAndConditionalAccessHandler觸發重登入
+            ConsentHandler.HandleException(ex);
+        }
+        return new MessageModel<bool>
+        {
+            Success = false
+        };
     }
 
     private PreachReportData GetDataFromCloud()

@@ -1,15 +1,29 @@
 ﻿@using WBPR.Base.Config
+@inject NavigationManager NavigationManager
 
 <CascadingAuthenticationState>
     <AuthorizeView>
         <Authorized>
-            Hello, @context.User.Identity.Name
-            <a href="MicrosoftIdentity/Account/SignOut">Logout</a>
-            @*<a href="logout">Logout</a>*@
+            <MudText>Hello, <b>@context.User.Identity.Name.Substring(0, 5)...</b></MudText>
+            <MudMenu Icon="@Icons.Filled.AccountCircle">
+                <MudMenuItem Icon="@Icons.Filled.Logout" Color="Color.Inherit" Edge="Edge.Start" OnClick="Logout">Logout</MudMenuItem>
+            </MudMenu>
         </Authorized>
         <NotAuthorized>
-            <a href="@Constant.MS_LOGIN_URL">Login</a>
+            <MudIconButton Icon="@Icons.Filled.Login" Color="Color.Inherit" Edge="Edge.Start" OnClick="Login" />
         </NotAuthorized>
     </AuthorizeView>
 </CascadingAuthenticationState>
 
+@code{
+
+    private void Logout()
+    {
+        NavigationManager.NavigateTo(Constant.MS_LOGOUT_URL, forceLoad: true);
+    }
+
+    private void Login()
+    {
+        NavigationManager.NavigateTo(Constant.MS_LOGIN_URL, forceLoad: true);
+    }
+}

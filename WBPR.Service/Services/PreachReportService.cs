@@ -16,25 +16,22 @@ namespace WBPR.Service.Services
             this.storageService = storageService;
         }
 
-        public async Task<MessageModel<PreachReportData>> Get(DateTimeOffset dateTimeOffset)
+        public async Task<MessageModel<PreachReportMonthData>> Get(DateTimeOffset dateTimeOffset)
         {
-            string dateFlag = dateTimeOffset.DateTime.ToString("yyyyMMdd");
+            string dateFlag = dateTimeOffset.DateTime.ToString("yyyyMM");
             string filename = CommonConstant.DATA_FILE_NAME_PREFIX + "_" + dateFlag;
             var mm = await storageService.Get(CommonConstant.DATA_FILE_NAME_PREFIX, filename);
             if (mm.Success)
             {
                 using StreamReader sr = new StreamReader(new MemoryStream(mm.Data.Data));
                 string content = sr.ReadToEnd();
-                var res = JsonSerializer.Deserialize<PreachReportData>(content);
-                if (res.PreachDate>DateTimeOffset.MinValue)
+                var res = JsonSerializer.Deserialize<PreachReportMonthData>(content);
+                return new MessageModel<PreachReportMonthData>
                 {
-                    return new MessageModel<PreachReportData>
-                    {
-                        Data = JsonSerializer.Deserialize<PreachReportData>(content)
-                    };
-                }
+                    Data = JsonSerializer.Deserialize<PreachReportMonthData>(content)
+                };
             }
-            return new MessageModel<PreachReportData>
+            return new MessageModel<PreachReportMonthData>
             {
                 Success = false,
                 Msg = string.Format("{0} no data", dateFlag),
@@ -42,22 +39,17 @@ namespace WBPR.Service.Services
             };
         }
 
-        public async Task<MessageModel<bool>> Update(PreachReportData data)
+        public async Task<MessageModel<bool>> Update(PreachReportMonthData monthData)
         {
-            DateTime utcTime = data.PreachDate.DateTime;
-            string fileName = CommonConstant.DATA_FILE_NAME_PREFIX + "_" + utcTime.ToString("yyyyMMdd");
-            //var mm = await storageService.Get(CommonConstant.DATA_FILE_NAME_PREFIX, fileName);
-            //if (mm.Success)
-            //{
-            //    await storageService.Delete(CommonConstant.DATA_FILE_NAME_PREFIX, fileName);
-            //}
-            string resStr = JsonSerializer.Serialize(data);
+            DateTime time = monthData.MonthData[0].PreachDate.DateTime;
+            string filename = CommonConstant.DATA_FILE_NAME_PREFIX + "_" + time.ToString("yyyyMM");
+            string resStr = JsonSerializer.Serialize(monthData);
             using MemoryStream ms = new MemoryStream();
             using StreamWriter sw = new StreamWriter(ms, Encoding.UTF8);
             sw.WriteLine(resStr);
             sw.Flush();
             var bytes = ms.ToArray();
-            var saveRes = await storageService.Save(CommonConstant.DATA_FILE_NAME_PREFIX, fileName, bytes);
+            var saveRes = await storageService.Save(CommonConstant.DATA_FILE_NAME_PREFIX, filename, bytes);
             return new MessageModel<bool>
             {
                 Success = saveRes.Data,

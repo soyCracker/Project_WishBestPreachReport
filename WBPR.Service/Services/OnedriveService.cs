@@ -25,37 +25,38 @@ namespace WBPR.Service.Services
 
         public async Task<MessageModel<StorageGetRes>> Get(string filepath, string fileName)
         {
-            try
-            {
-                var stream = await graphClient.Me.Drive.Root.ItemWithPath(filepath + "/" + fileName).Content.Request().GetAsync();
+            //try
+            //{
 
-                if (stream.Length!=0)
-                {
-                    using MemoryStream ms = new MemoryStream();
-                    stream.Seek(0, SeekOrigin.Begin);
-                    stream.CopyTo(ms);
-                    byte[] data = ms.ToArray();
-                    return new MessageModel<StorageGetRes>
-                    {
-                        Success = true,
-                        Data = new StorageGetRes
-                        {
-                            Name = fileName,
-                            Data = data
-                        }
-                    };
-                }
-            }
-            catch (ServiceException ex)
+            //}
+            //catch (ServiceException ex)
+            //{
+            //    return new MessageModel<StorageGetRes>
+            //    {
+            //        Success = false,
+            //        Msg = string.Format("No data: {0} , {1}", fileName, ex.Message),
+            //        Data = new StorageGetRes
+            //        {
+            //            Name = "",
+            //            Data = new byte[0]
+            //        }
+            //    };
+            //}
+            var stream = await graphClient.Me.Drive.Root.ItemWithPath(filepath + "/" + fileName).Content.Request().GetAsync();
+
+            if (stream.Length!=0)
             {
+                using MemoryStream ms = new MemoryStream();
+                stream.Seek(0, SeekOrigin.Begin);
+                stream.CopyTo(ms);
+                byte[] data = ms.ToArray();
                 return new MessageModel<StorageGetRes>
                 {
-                    Success = false,
-                    Msg = string.Format("No data: {0} , {1}", fileName, ex.Message),
+                    Success = true,
                     Data = new StorageGetRes
                     {
-                        Name = "",
-                        Data = new byte[0]
+                        Name = fileName,
+                        Data = data
                     }
                 };
             }

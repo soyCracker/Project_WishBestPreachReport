@@ -5,7 +5,7 @@ namespace WBPR.Service.Interfaces
 {
     public interface IPreachReportService
     {
-        Task<MessageModel<bool>> Update(PreachReportData data);
-        Task<MessageModel<PreachReportData>> Get(DateTimeOffset dateTimeOffset);
+        Task<MessageModel<bool>> Update(PreachReportMonthData monthData);
+        Task<MessageModel<PreachReportMonthData>> Get(DateTimeOffset dateTimeOffset);
     }
 }

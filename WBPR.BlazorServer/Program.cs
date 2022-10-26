@@ -26,7 +26,7 @@ builder.Services.AddScoped<IBrowserLocalStorageService, BrowserLocalStorageServi
 builder.Services.AddScoped<ISettingService, SettingService>();
 
 //Auth
-builder.Services.SetAuthTest(builder.Configuration);
+builder.Services.SetAuthMSIdentity(builder.Configuration);
 
 //語系
 builder.Services.AddCultureResource();

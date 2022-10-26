@@ -2,7 +2,19 @@
 
 @inject NavigationManager navManager
 
-<h3>MsLoginCallback</h3>
+<MudStack AlignItems="AlignItems.Center">
+    <MudItem >
+        <MudPaper Class="pa-4" Elevation="4">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.h6">Microsoft Login...</MudText>
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    
+</MudStack>
+
+
 
 @code {
 

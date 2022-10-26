@@ -8,13 +8,12 @@ namespace WBPR.BlazorServer.Extension
 {
     public static class ConfigExtension
     {
-        private static readonly string graphUrl = "https://graph.microsoft.com/";
         private static readonly string[] scopes = new[] {
                             "User.Read",
                             "Files.ReadWrite"
                         };
 
-        public static void SetAuth(this IServiceCollection serviceCollection, IConfiguration configuration)
+        public static void SetAuthOCID(this IServiceCollection serviceCollection, IConfiguration configuration)
         {
             serviceCollection.AddAuthentication(options =>
             {
@@ -42,15 +41,11 @@ namespace WBPR.BlazorServer.Extension
                 options.RemoteAuthenticationTimeout = TimeSpan.FromMinutes(30);
                 options.Authority = "https://login.microsoftonline.com/common/v2.0/";
                 options.ResponseType = "code";
-                //options.Scope.Add("profile");
-                //options.Scope.Add("email");
-                //options.Scope.Add("offline_access");
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = false,
                     NameClaimType = "email",
                 };
-                //options.CallbackPath = "/signin-microsoft";
                 options.Prompt = "select_account"; // login, consent
                 options.SaveTokens=true;
                 foreach (var s in scopes)
@@ -60,7 +55,7 @@ namespace WBPR.BlazorServer.Extension
             });
         }
 
-        public static void SetAuthTest(this IServiceCollection serviceCollection, IConfiguration configuration)
+        public static void SetAuthMSIdentity(this IServiceCollection serviceCollection, IConfiguration configuration)
         {
             string[] initialScopes = configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
             serviceCollection.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)

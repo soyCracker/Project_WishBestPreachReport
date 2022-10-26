@@ -37,13 +37,12 @@
     {
         if(firstRender)
         {
-            //res = await graphClientUtil.GetRoot();
-            var req = GraphClient.Me.Drive.Root.Children.Request();
-            var ress = req.GetAsync().Result;
-            foreach (var file in ress)
-            {
-                res += file.Id + ": " + file.Name + "\n";
-            }
+            //var req = GraphClient.Me.Drive.Root.Children.Request();
+            //var ress = req.GetAsync().Result;
+            //foreach (var file in ress)
+            //{
+            //    res += file.Id + ": " + file.Name + "\n";
+            //}
         }
     }
 

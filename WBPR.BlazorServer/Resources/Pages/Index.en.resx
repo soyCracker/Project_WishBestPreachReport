@@ -132,6 +132,24 @@
   <data name="MediaPlayNum" xml:space="preserve">
     <value>MediaPlay</value>
   </data>
+  <data name="MonthBibleStudyNum" xml:space="preserve">
+    <value>Month Bible Study</value>
+  </data>
+  <data name="MonthDistributeNum" xml:space="preserve">
+    <value>Month Distribute</value>
+  </data>
+  <data name="MonthHour" xml:space="preserve">
+    <value>Month Hours</value>
+  </data>
+  <data name="MonthMediaPlayNum" xml:space="preserve">
+    <value>Month MediaPlay</value>
+  </data>
+  <data name="MonthReviewNum" xml:space="preserve">
+    <value>Month Review</value>
+  </data>
+  <data name="MonthSummary" xml:space="preserve">
+    <value>Month Summary</value>
+  </data>
   <data name="OverviewTitle" xml:space="preserve">
     <value>Overview</value>
   </data>

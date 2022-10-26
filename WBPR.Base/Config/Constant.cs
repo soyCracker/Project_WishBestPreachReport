@@ -6,5 +6,6 @@
         public static readonly string MS_AUTH_CLIENT_SECRET = "H4x8Q~5N4DzWELlU-xnU7VtoBcZu3dlnhdlH4amf";
         public static readonly string MS_AUTH_TENANT_ID = "da114b60-0d10-45a2-8f43-bfd5bfda9758";
         public static readonly string MS_LOGIN_URL = "login?redirectUri=/signin-microsoft";
+        public static readonly string MS_LOGOUT_URL = "MicrosoftIdentity/Account/SignOut";
     }
 }

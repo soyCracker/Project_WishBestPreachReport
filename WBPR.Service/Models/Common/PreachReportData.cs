@@ -15,6 +15,11 @@ namespace WBPR.Service.Models.Common
         public double PreachMinute { get; set; } = 0;
     }
 
+    public class PreachReportMonthData
+    {
+        public List<PreachReportData> MonthData { get; set; }
+    }
+
     public class PreachReportTimePeriod
     {
         public DateTimeOffset StartTime { get; set; }
