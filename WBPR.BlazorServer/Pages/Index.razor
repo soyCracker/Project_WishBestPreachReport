@@ -440,15 +440,16 @@
                 prData.DistributeNum == 0 &&
                 prData.PreachReportTimes.Count() == 0;
         }
-        else
-        {
-            var newMonth = prMonthData;
-            newMonth.MonthData.Remove(oldDay);
-            newMonth.MonthData.Add(prData);
-            string newStr = JsonSerializer.Serialize(newMonth);
-            string oldStr = JsonSerializer.Serialize(prMonthData);
-            return newStr == oldStr;
-        } 
+        return false;
+        //else
+        //{
+        //    var newMonth = prMonthData;
+        //    newMonth.MonthData.Remove(oldDay);
+        //    newMonth.MonthData.Add(prData);
+        //    string newStr = JsonSerializer.Serialize(newMonth);
+        //    string oldStr = JsonSerializer.Serialize(prMonthData);
+        //    return newStr == oldStr;
+        //} 
     }
 
     //自動存檔
