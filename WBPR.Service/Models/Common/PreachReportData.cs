@@ -11,7 +11,7 @@ namespace WBPR.Service.Models.Common
         public int MediaPlayNum { get; set; } = 0;
         public int DistributeNum { get; set; } = 0;
         public int PreachTimeRadio { get; set; } = (int)PreachRadioEnum.Hours;
-        public DateTimeOffset UpdateTime { get; set; }
+        public DateTimeOffset UpdateTime { get; set; } = DateTimeOffset.MinValue;
         public double PreachMinute { get; set; } = 0;
     }
 

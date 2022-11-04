@@ -24,25 +24,21 @@
         </MudPaper>
     </MudItem>
 
-    <MudText Typo="Typo.h5">@res</MudText>
+    <MudText Typo="Typo.body1">@res</MudText>
 </MudStack>
 
 @code {
     [CascadingParameter]
     protected BlazorUiInfo blazorUiInfo { get; set; }
 
-    private string res = "";
+    private string res = "123456789";
+    private PreachReportData prData = new PreachReportData();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(firstRender)
         {
-            //var req = GraphClient.Me.Drive.Root.Children.Request();
-            //var ress = req.GetAsync().Result;
-            //foreach (var file in ress)
-            //{
-            //    res += file.Id + ": " + file.Name + "\n";
-            //}
+            
         }
     }
 
