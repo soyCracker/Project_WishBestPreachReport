@@ -216,8 +216,7 @@
         }
         catch(Exception ex)
         {
-            //似乎token過期，透過MicrosoftIdentityConsentAndConditionalAccessHandler觸發重登入
-            ConsentHandler.HandleException(ex);
+            MicrosoftGraphException(ex);
         }
         return new MessageModel<PreachReportMonthData>
         {
@@ -386,8 +385,7 @@
         }
         catch(Exception ex)
         {
-            //似乎token過期，透過MicrosoftIdentityConsentAndConditionalAccessHandler觸發重登入
-            ConsentHandler.HandleException(ex);
+            MicrosoftGraphException(ex);
         }
         return new MessageModel<bool>
         {
@@ -471,6 +469,15 @@
             {
                 ShowAlert(langLoc["UpdateFail"], Severity.Error);
             }
+        }
+    }
+
+    private void MicrosoftGraphException(Exception ex)
+    {
+        if (!ex.Message.Contains("Code: itemNotFound"))
+        {
+            //似乎token過期，透過MicrosoftIdentityConsentAndConditionalAccessHandler觸發重登入
+            ConsentHandler.HandleException(ex);
         }
     }
 }
