@@ -57,8 +57,9 @@
         <MudPaper Class="pa-4" Elevation="4" Width="280px">
             <MudText Typo="Typo.h6" Align="Align.Center">@langLoc["OverviewTitle"]</MudText>
             <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+            
             <MudDatePicker Date="displayPreachDate" Label="日期"
-                           DateChanged="@(async(arg)=> await PreachDateChanged(arg))" MaxDate="maxDate" />
+                           DateChanged="@(async(arg)=>await PreachDateChanged(arg))" MaxDate="maxDate" />
             <br />
             <MudNumericField @bind-Value="prData.ReviewNum" Label="@langLoc["ReviewNum"]" Variant="Variant.Outlined"
                              Min="prData.BibleStudyNum>0?1:0" Max="1000"/>
@@ -140,14 +141,12 @@
     private PreachReportData prData = new PreachReportData();
     private PreachReportMonthData prMonthData = new PreachReportMonthData();
     private bool isLoading = false;
-    private bool firstRun = true;
-    //private bool isAnyDataChange = false;
     private int monthDistributeNum = 0;
     private int monthMediaPlayNum = 0;
     private int monthReviewNum = 0;
     private int monthBibleStudyNum = 0;
     private double monthHours = 0;
-    private int month = 0;
+    private int month = DateTime.Today.Month;
 
     protected override async Task OnInitializedAsync()
     {
@@ -160,50 +159,38 @@
     {
         if (firstRender)
         {
-            //var timeSpan = await TimezoneUtil.GetTimezoneOffset(jsRuntime);
-            //testTime = DateTime.UtcNow.Add(timeSpan);
             await Init();
             logger.LogDebug("Index OnAfterRenderAsync() prData.PreachDate: " + prData.PreachDate);
-            //await InvokeAsync(() => StateHasChanged());
-
-            //while(true)
-            //{
-            //    //等3秒
-            //    await Task.Delay(3 * 1000);
-            //    await AnyDataChanged();
-            //}
         }
-
     }
 
     private async Task Init()
     {
         DateTimeOffset clientTime = await BlazorTimeUtil.GetClientDate(jsRuntime);
-        displayPreachDate = clientTime.DateTime;
-        maxDate = clientTime.DateTime;
         await InitPreachReportData(clientTime, DateTimeOffset.MinValue);
+        SetMonthDisplayData(prMonthData);
     }
 
-    private async Task InitPreachReportData(DateTimeOffset dateTimeOffset, DateTimeOffset old)
+    private async Task InitPreachReportData(DateTimeOffset newTime, DateTimeOffset oldTime)
     {
         isLoading = true;
         StateHasChanged();
-
-        var mm = await GetPreachReportData(dateTimeOffset);
-        if (mm.Success)
+        if(oldTime == DateTimeOffset.MinValue || newTime.Month!=oldTime.Month)
         {
-            prMonthData = mm.Data;
-            prData = GetSingleDateData(prMonthData, dateTimeOffset);
-            SetMonthDisplayData(prMonthData);
-            await InvokeAsync(() => StateHasChanged());
+            var mm = await GetPreachReportData(newTime);
+            if (mm.Success)
+            {
+                prMonthData = mm.Data;
+            }
+            else
+            {
+                prData = new PreachReportData();
+                prData.PreachDate = newTime;
+                prData.PreachReportTimes = new List<PreachReportTimePeriod>();
+                logger.LogDebug("Index InitPreachReportData() prData.PreachDate: " + prData.PreachDate);
+            }
         }
-        else
-        {
-            prData = new PreachReportData();
-            prData.PreachDate = dateTimeOffset;
-            logger.LogDebug("Index InitPreachReportData() prData.PreachDate: " + prData.PreachDate);
-            prData.PreachReportTimes = new List<PreachReportTimePeriod>();
-        }
+        prData = GetSingleDateData(prMonthData, newTime);
         isLoading = false;
         StateHasChanged();
     }
@@ -224,14 +211,14 @@
         };
     }
 
-    private PreachReportData GetSingleDateData(PreachReportMonthData monthData, DateTimeOffset dateTimeOffset)
+    private PreachReportData GetSingleDateData(PreachReportMonthData monthData, DateTimeOffset selectTime)
     {
-        var res = monthData.MonthData.SingleOrDefault(x=>x.PreachDate.Day==dateTimeOffset.Day);
+        var res = monthData.MonthData.FirstOrDefault(x=>x.PreachDate.Date==selectTime.Date);
         if(res==null)
         {
             return new PreachReportData 
             {
-                PreachDate = dateTimeOffset,
+                PreachDate = selectTime.Date,
                 PreachReportTimes = new List<PreachReportTimePeriod>()
             };
         }
@@ -255,19 +242,15 @@
 
     private async Task PreachDateChanged(DateTime? date)
     {
-        if (firstRun)
-        {
-            firstRun = false;
-        }
-        else
-        {
-            await AnyDataChanged();
-            var old = displayPreachDate;
-            displayPreachDate = date.Value;
-            var timeSpan = await BlazorTimeUtil.GetClientTimezoneOffset(jsRuntime);
-            await InitPreachReportData(new DateTimeOffset(date.Value, timeSpan), new DateTimeOffset(old, timeSpan));
-        }
-        //logger.LogDebug("Index PreachDateChanged() prData.PreachDate: " + prData.PreachDate);
+        //MudDatePicker的DateChanged要在async function前先把新date值給Date參數，否則DateChanged會重複執行
+        //還沒弄懂為甚麼要DateTime.SpecifyKind，但可以解決錯誤
+        var oldTime = DateTime.SpecifyKind(displayPreachDate, DateTimeKind.Unspecified);
+        displayPreachDate = DateTime.SpecifyKind(date.Value, DateTimeKind.Unspecified);
+        logger.LogDebug("PreachDateChanged Date:" + date);
+        await Update();
+        var timeSpan = await BlazorTimeUtil.GetClientTimezoneOffset(jsRuntime);
+        await InitPreachReportData(new DateTimeOffset(displayPreachDate, timeSpan), new DateTimeOffset(oldTime, timeSpan));
+        SetMonthDisplayData(prMonthData);
     }
 
     private void StartTimespanToHour(TimeSpan? timeSpan)
@@ -277,7 +260,6 @@
         {
             endTime = startTime;
         }
-        //isAnyDataChange = true;
     }
 
     private void EndTimespanToHour(TimeSpan? timeSpan)
@@ -287,7 +269,6 @@
         {
             startTime = endTime;
         }
-        //isAnyDataChange = true;
     }
 
     private void BibleStudyNumChanged(int val)
@@ -297,32 +278,7 @@
         {
             prData.ReviewNum++;
         }
-        //isAnyDataChange = true;
     }
-
-    //private void ReviewNumChanged(int val)
-    //{
-    //    prData.ReviewNum = val;
-    //    isAnyDataChange = true;
-    //}
-
-    //private void DistributeNumChanged(int val)
-    //{
-    //    prData.DistributeNum = val;
-    //    isAnyDataChange = true;
-    //}
-
-    //private void MediaPlayNumChanged(int val)
-    //{
-    //    prData.MediaPlayNum = val;
-    //    isAnyDataChange = true;
-    //}
-
-    //private void PreachTimeRadioChanged(int val)
-    //{
-    //    prData.PreachTimeRadio = val;
-    //    isAnyDataChange = true;
-    //}
 
     private void AddPeriod()
     {
@@ -342,30 +298,28 @@
                     EndTime = et
                 });
             ShowAlert(langLoc["AddPeriodSuccess"], Severity.Info);
-            //isAnyDataChange = true;
         }
     }
 
     private void DeletePeriod(int pNo)
     {
         prData.PreachReportTimes.RemoveAt(pNo);
-        //isAnyDataChange = true;
     }
 
     private async Task Update()
     {
         isLoading = true;
         StateHasChanged();
-        var old = prMonthData.MonthData.SingleOrDefault(x => x.PreachDate.Day == prData.PreachDate.Day);
+        var old = prMonthData.MonthData.FirstOrDefault(x => x.PreachDate.Date == prData.PreachDate.Date);
         if(old!=null)
         {
             prMonthData.MonthData.Remove(old);
         }
         prData.UpdateTime = await BlazorTimeUtil.GetClientDate(jsRuntime);
         prMonthData.MonthData.Add(prData);
+        SetMonthDisplayData(prMonthData);
         var mm = await UpdatePreachReportData(prMonthData);
         isLoading = false;
-        //isAnyDataChange = false;
         StateHasChanged();
         if (mm.Success)
         {
@@ -439,15 +393,6 @@
                 prData.PreachReportTimes.Count() == 0;
         }
         return false;
-        //else
-        //{
-        //    var newMonth = prMonthData;
-        //    newMonth.MonthData.Remove(oldDay);
-        //    newMonth.MonthData.Add(prData);
-        //    string newStr = JsonSerializer.Serialize(newMonth);
-        //    string oldStr = JsonSerializer.Serialize(prMonthData);
-        //    return newStr == oldStr;
-        //} 
     }
 
     //自動存檔
@@ -456,11 +401,9 @@
         //檢測資料有無變更
         if (!IsPrMonthDataEqual())
         {
-            //isAnyDataChange = false;
             ReplaceOneOfMonthData();
             SetMonthDisplayData(prMonthData);
             var mm = await UpdatePreachReportData(prMonthData);
-            StateHasChanged();
             if (mm.Success)
             {
                 ShowAlert(langLoc["UpdateSuccess"], Severity.Success);

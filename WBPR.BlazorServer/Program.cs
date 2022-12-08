@@ -1,4 +1,6 @@
 ﻿using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using MudBlazor.Services;
@@ -10,14 +12,23 @@ using WBPR.Service.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor().AddMicrosoftIdentityConsentHandler();
+//builder.Services.AddRazorPages();
+builder.Services.AddControllersWithViews()
+    .AddMvcOptions(options =>
+    {
+        var policy = new AuthorizationPolicyBuilder()
+                         .RequireAuthenticatedUser()
+                         .Build();
+        options.Filters.Add(new AuthorizeFilter(policy));
+    })
+    .AddMicrosoftIdentityUI();
+builder.Services.AddServerSideBlazor()
+    .AddMicrosoftIdentityConsentHandler()
+    .AddCircuitOptions(options => { options.DetailedErrors = true; });
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddMudServices();
 builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddControllers().AddMicrosoftIdentityUI();
-//IHttpClientFactory
-//builder.Services.AddHttpClient();
+
 
 builder.Services.AddScoped<IPreachReportService, PreachReportService>();
 //builder.Services.AddScoped<IStorageService, PrDataBrowserLocalStorageService>();

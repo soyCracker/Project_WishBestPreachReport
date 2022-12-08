@@ -48,9 +48,11 @@
     private BlazorUiInfo blazorUiInfo = new BlazorUiInfo();
     //private string testLang = "XX";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        blazorUiInfo.IsDarkMode = true;
+        var darkRes = await settingService.IsDarkTheme();
+        blazorUiInfo.IsDarkMode = darkRes.Data;
+        //blazorUiInfo.IsDarkMode = true;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -65,8 +67,8 @@
     {
         await SetLang();
 
-        var darkRes = await settingService.IsDarkTheme();
-        blazorUiInfo.IsDarkMode = darkRes.Data;
+        //var darkRes = await settingService.IsDarkTheme();
+        //blazorUiInfo.IsDarkMode = darkRes.Data;
         await InvokeAsync(() => StateHasChanged());
     }
 
@@ -100,28 +102,22 @@
         _drawerOpen = !_drawerOpen;
     }
 
-    //private void ToggleDarkMode()
-    //{
-    //    isDarkMode = !isDarkMode;
-    //    lighOrDarkIcon = isDarkMode ? Icons.Filled.DarkMode : Icons.Filled.LightMode;
-    //}
-
     MudTheme MyCustomTheme = new MudTheme()
         {
+            Typography = new Typography()
+            {
+                Default = new Default()
+                {
+                    FontFamily = new[] { "Noto Sans TC", "微軟正黑體", "sans-serif" }
+                }
+            },
+
             Palette = new Palette()
             {
                 Primary = "#D1878B",
                 Secondary = Colors.Green.Accent4,
-                AppbarBackground = "D1878B",
-                // 御召茶 #43676B #5B7B82
-                // 浅蘇芳 #D1878B #A25768
+                AppbarBackground = "#D1878B"
             },
-            //PaletteDark = new Palette()
-            //{
-            //    Primary = Colors.Blue.Lighten1,
-            //    AppbarBackground = Colors.Pink.Accent1,
-            //    Background = Colors.Grey.Darken3
-            //},
 
             LayoutProperties = new LayoutProperties()
             {
