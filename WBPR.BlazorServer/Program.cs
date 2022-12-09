@@ -13,15 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 //builder.Services.AddRazorPages();
-builder.Services.AddControllersWithViews()
-    .AddMvcOptions(options =>
-    {
-        var policy = new AuthorizationPolicyBuilder()
-                         .RequireAuthenticatedUser()
-                         .Build();
-        options.Filters.Add(new AuthorizeFilter(policy));
-    })
-    .AddMicrosoftIdentityUI();
+builder.Services.AddMvc();
 builder.Services.AddServerSideBlazor()
     .AddMicrosoftIdentityConsentHandler()
     .AddCircuitOptions(options => { options.DetailedErrors = true; });
@@ -31,8 +23,8 @@ builder.Services.AddBlazoredLocalStorage();
 
 
 builder.Services.AddScoped<IPreachReportService, PreachReportService>();
-//builder.Services.AddScoped<IStorageService, PrDataBrowserLocalStorageService>();
-builder.Services.AddScoped<IStorageService, OnedriveService>();
+builder.Services.AddScoped<IStorageService, PrDataBrowserLocalStorageService>();
+//builder.Services.AddScoped<IStorageService, OnedriveService>();
 builder.Services.AddScoped<IBrowserLocalStorageService, BrowserLocalStorageService>();
 builder.Services.AddScoped<ISettingService, SettingService>();
 

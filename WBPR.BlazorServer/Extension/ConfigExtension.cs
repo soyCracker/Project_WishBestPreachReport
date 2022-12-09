@@ -1,68 +1,44 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.Identity.Web;
-using Microsoft.IdentityModel.Tokens;
+using System.Net;
+using System.Text.RegularExpressions;
 using WBPR.Base.Config;
 
 namespace WBPR.BlazorServer.Extension
 {
     public static class ConfigExtension
     {
-        private static readonly string[] scopes = new[] {
-                            "User.Read",
-                            "Files.ReadWrite"
-                        };
-
-        public static void SetAuthOCID(this IServiceCollection serviceCollection, IConfiguration configuration)
+        public static void SetAuthMSIdentity(this IServiceCollection serviceCollection, IConfiguration configuration)
         {
             serviceCollection.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = "Microsoft";
             })
+            //網站本身的Cookie - based Authentication
             .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
             {
                 options.Events.OnRedirectToLogin = context =>
                 {
-                    //讓MVC及API驗證失敗時有不同的行為
                     context.Response.Redirect(new PathString(Constant.MS_LOGIN_URL));
                     return Task.CompletedTask;
                 };
                 // ExpireTimeSpan與Cookie.MaxAge都要設定
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                options.ExpireTimeSpan = TimeSpan.FromHours(6);
                 options.Cookie.MaxAge = options.ExpireTimeSpan;
                 //登入後過期時間內没有進行操作就會過期;false有操作還是會過期
                 options.SlidingExpiration = false;
             })
-            .AddOpenIdConnect("OpenIdConnect", "OpenIdConnect", options =>
+            .AddMicrosoftAccount("Microsoft", options =>
             {
+                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.ClientId = Constant.MS_AUTH_CLIENT_ID;
                 options.ClientSecret = Constant.MS_AUTH_CLIENT_SECRET;
-                options.RemoteAuthenticationTimeout = TimeSpan.FromMinutes(30);
-                options.Authority = "https://login.microsoftonline.com/common/v2.0/";
-                options.ResponseType = "code";
-                options.TokenValidationParameters = new TokenValidationParameters
+                options.Events.OnRedirectToAuthorizationEndpoint = context =>
                 {
-                    ValidateIssuer = false,
-                    NameClaimType = "email",
+                    context.HttpContext.Response.Redirect(context.RedirectUri + "&prompt=select_account");
+                    return Task.CompletedTask;
                 };
-                options.Prompt = "select_account"; // login, consent
-                options.SaveTokens=true;
-                foreach (var s in scopes)
-                {
-                    options.Scope.Add(s);
-                }
             });
-        }
-
-        public static void SetAuthMSIdentity(this IServiceCollection serviceCollection, IConfiguration configuration)
-        {
-            string[] initialScopes = configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
-            serviceCollection.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                .AddMicrosoftIdentityWebApp(configuration.GetSection("AzureAd"))
-                .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
-                .AddMicrosoftGraph(configuration.GetSection("DownstreamApi"))
-                .AddInMemoryTokenCaches();
         }
 
         public static void AddCultureResource(this IServiceCollection serviceCollection)
