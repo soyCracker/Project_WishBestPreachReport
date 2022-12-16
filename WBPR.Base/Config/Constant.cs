@@ -7,5 +7,10 @@
         public static readonly string MS_AUTH_TENANT_ID = "da114b60-0d10-45a2-8f43-bfd5bfda9758";
         public static readonly string MS_LOGIN_URL = "login?redirectUri=/signin-microsoft";
         public static readonly string MS_LOGOUT_URL = "MicrosoftIdentity/Account/SignOut";
+
+        public static readonly string GOOGLE_LOGIN_CALLBACK = "/signin-google";
+        public static readonly string GOOGLE_LOGIN_URL = "login?redirectUri=/signin-google";
+
+        public static readonly string LOGOUT_URL = "logout";
     }
 }

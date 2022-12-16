@@ -12,18 +12,9 @@ using WBPR.Service.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-//builder.Services.AddRazorPages();
-builder.Services.AddControllersWithViews()
-    .AddMvcOptions(options =>
-    {
-        var policy = new AuthorizationPolicyBuilder()
-                         .RequireAuthenticatedUser()
-                         .Build();
-        options.Filters.Add(new AuthorizeFilter(policy));
-    })
-    .AddMicrosoftIdentityUI();
+builder.Services.AddRazorPages();
+builder.Services.AddControllers();
 builder.Services.AddServerSideBlazor()
-    .AddMicrosoftIdentityConsentHandler()
     .AddCircuitOptions(options => { options.DetailedErrors = true; });
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddMudServices();
@@ -31,13 +22,13 @@ builder.Services.AddBlazoredLocalStorage();
 
 
 builder.Services.AddScoped<IPreachReportService, PreachReportService>();
-//builder.Services.AddScoped<IStorageService, PrDataBrowserLocalStorageService>();
-builder.Services.AddScoped<IStorageService, OnedriveService>();
+builder.Services.AddScoped<IStorageService, PrDataBrowserLocalStorageService>();
+//builder.Services.AddScoped<IStorageService, OnedriveService>();
 builder.Services.AddScoped<IBrowserLocalStorageService, BrowserLocalStorageService>();
 builder.Services.AddScoped<ISettingService, SettingService>();
 
 //Auth
-builder.Services.SetAuthMSIdentity(builder.Configuration);
+builder.Services.SetAuth(builder.Configuration);
 
 //語系
 builder.Services.AddCultureResource();
@@ -60,7 +51,7 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRouting();
-app.MapControllers();
+app.MapControllers();//.RequireAuthorization()
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 app.Run();

@@ -9,7 +9,7 @@
                     <MudText Typo="Typo.h5" Color="Color.Primary">Sorry, you can not aaccess this address.</MudText>
                     @{
                         // Exception https://github.com/dotnet/aspnetcore/issues/13582
-                        navigationManager.NavigateTo(Constant.MS_LOGIN_URL, forceLoad: true);
+                        navigationManager.NavigateTo(Constant.GOOGLE_LOGIN_URL, forceLoad: true);
                     }
                 </NotAuthorized>
                 <Authorizing>
