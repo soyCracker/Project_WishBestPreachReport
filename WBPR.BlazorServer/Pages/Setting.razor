@@ -1,14 +1,11 @@
-﻿@page "/setting"
+﻿@page "/"
 @using Microsoft.Extensions.Localization
-@using Microsoft.Graph
 @using WBPR.Service.Interfaces
 @using WBPR.Service.Models.Common
 @using WBPR.Service.Services
-@using Microsoft.Identity.Web
 @inject IStringLocalizer<Setting> langLoc
 @inject ISettingService settingService
-@inject GraphServiceClient GraphClient
-@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+@inject IStorageService StorageService
 
 <PageTitle>WBPR - @langLoc["PageTitle"]</PageTitle>
 
@@ -30,15 +27,23 @@
 @code {
     [CascadingParameter]
     protected BlazorUiInfo blazorUiInfo { get; set; }
-
     private string res = "123456789";
-    private PreachReportData prData = new PreachReportData();
+    //private GoogleDriveStorageService gdService;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(firstRender)
         {
-            
+            //GoogleConfig googleConfig = new GoogleConfig
+            //    {
+            //        ClientId = "558796868602-4fvgg8u33d5pg4psr0i10ana24pa0e1e.apps.googleusercontent.com",
+            //        ClientSecret = "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"
+            //    };
+            //gdService = new GoogleDriveStorageService(googleConfig);
+            //gdService.Save(null, null, null);
+            var testData = await StorageService.Get("WPBR_DATA", "WPBR_DATA_202212");
+            res = testData.Msg;
+            StateHasChanged();
         }
     }
 

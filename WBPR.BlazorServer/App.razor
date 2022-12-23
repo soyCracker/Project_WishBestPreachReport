@@ -6,7 +6,7 @@
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
-                    <MudText Typo="Typo.h5" Color="Color.Primary">Sorry, you can not aaccess this address.</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Primary">Sorry, you can not access this address.</MudText>
                     @{
                         // Exception https://github.com/dotnet/aspnetcore/issues/13582
                         navigationManager.NavigateTo(Constant.GOOGLE_LOGIN_URL, forceLoad: true);

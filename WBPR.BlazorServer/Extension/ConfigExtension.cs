@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Google.Apis.Auth.AspNetCore3;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
@@ -34,17 +35,22 @@ namespace WBPR.BlazorServer.Extension
                 //登入後過期時間內没有進行操作就會過期;false有操作還是會過期
                 options.SlidingExpiration = false;
             })
-            .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+            .AddGoogleOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
             {
-                options.Authority = configuration["GoogleOIDC:Authority"];
                 options.ClientId = configuration["GoogleOIDC:ClientId"];
                 options.ClientSecret = configuration["GoogleOIDC:ClientSecret"];
-                options.ResponseType = "code";
-                options.Scope.Add("openid");
-                options.Scope.Add("profile");
-                options.SaveTokens = true;
-                options.Prompt = "select_account";
             });
+            //.AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+            //{
+            //    options.Authority = configuration["GoogleOIDC:Authority"];
+            //    options.ClientId = configuration["GoogleOIDC:ClientId"];
+            //    options.ClientSecret = configuration["GoogleOIDC:ClientSecret"];
+            //    options.ResponseType = "code";
+            //    options.Scope.Add("openid");
+            //    options.Scope.Add("profile");
+            //    options.SaveTokens = true;
+            //    options.Prompt = "select_account";
+            //});
         }
 
         public static void SetAuthMSIdentity(this IServiceCollection serviceCollection, IConfiguration configuration)

@@ -1,8 +1,4 @@
 ﻿using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.UI;
 using MudBlazor.Services;
 using WBPR.BlazorServer.Data;
 using WBPR.BlazorServer.Extension;
@@ -22,8 +18,9 @@ builder.Services.AddBlazoredLocalStorage();
 
 
 builder.Services.AddScoped<IPreachReportService, PreachReportService>();
-builder.Services.AddScoped<IStorageService, PrDataBrowserLocalStorageService>();
+//builder.Services.AddScoped<IStorageService, PrDataBrowserLocalStorageService>();
 //builder.Services.AddScoped<IStorageService, OnedriveService>();
+builder.Services.AddScoped<IStorageService, GoogleDriveStorageService>();
 builder.Services.AddScoped<IBrowserLocalStorageService, BrowserLocalStorageService>();
 builder.Services.AddScoped<ISettingService, SettingService>();
 
